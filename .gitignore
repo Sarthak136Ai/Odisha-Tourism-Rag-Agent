@@ -1,0 +1,11 @@
+venv/
+__pycache__/
+*.pyc
+models/
+vectordb/
+chroma_db/
+data/*.pdf
+.env
+.gemini/
+.ipynb_checkpoints/
+local_config.py

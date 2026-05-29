@@ -1,0 +1,376 @@
+import os
+import re
+import logging
+import requests
+from bs4 import BeautifulSoup
+from pypdf import PdfReader
+import config
+
+# Set up logging
+logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logger = logging.getLogger(__name__)
+
+# --- RICH OFFLINE BOOTSTRAP DATA ---
+# This guarantees high-quality, structured information is immediately available even if scraping fails.
+BOOTSTRAP_DATA = [
+    {
+        "title": "Jagannath Temple Puri - Heritage and Guide",
+        "category": "Temples & Heritage",
+        "content": """
+The Jagannath Temple of Puri is a famous, sacred Hindu temple dedicated to Jagannath, a form of Sri Krishna, located in the coastal town of Puri, Odisha. Built in the 12th century by King Anantavarman Chodaganga Deva of the Eastern Ganga Dynasty, it is one of the Char Dham pilgrimage sites (along with Badrinath, Dwarka, and Rameswaram).
+The temple is famous for its annual Ratha Yatra (Chariot Festival), where the three main deities (Jagannath, Balabhadra, and Subhadra) are pulled on massive, beautifully decorated wooden chariots to the Gundicha Temple. This event takes place around June or July and attracts millions of devotees globally.
+Rituals and Guidelines:
+- The temple remains open from 5:00 AM to 11:00 PM daily.
+- Only Hindus are permitted inside the main temple complex. Non-Hindus can view the temple from the roof of the nearby Raghunandan Library.
+- Visitors must dress conservatively (no shorts, sleeveless tops, or leather items are allowed inside). Mobile phones and cameras are strictly prohibited inside.
+- Entry Tickets: Main entry is free, but special quick darshan or puja tickets can be purchased at designated counters.
+- Mythological Construction: According to Hindu Puranic texts like the Brahma Purana and Skanda Purana, King Indradyumna started building the original temple during the Satya Yuga, the first and most ancient cosmic age in Hindu chronology. Because this event belongs to mythology, there is no specific historical calendar year or date for his construction.
+- Main gates of entry: Purba Dwara (Eastern Lion Gate / Singhadwara), Paschima Dwara (Western Tiger Gate), Uttara Dwara (Northern Elephant Gate), and Dakshina Dwara (Southern Horse Gate).
+- Arunastambha: A 16-sided, 34-foot-tall monolithic chlorite stone pillar standing in front of Singhadwara, which was brought here from the Konark Sun Temple in the 18th century.
+        """
+    },
+    {
+        "title": "Konark Sun Temple - UNESCO World Heritage Site",
+        "category": "Temples & Heritage",
+        "content": """
+The Konark Sun Temple is a 13th-century CE Sun Temple at Konark, about 35 kilometers northeast of Puri on the coastline of Odisha. Dedicated to the Hindu Sun God, Surya, this temple was built around 1250 CE by King Narasimhadeva I of the Eastern Ganga Dynasty.
+Architectural Marvel:
+Designed in the shape of a colossal chariot, it has 24 beautifully carved stone wheels, each about 3 meters in diameter, pulled by 7 mighty horses. The wheels are not just decorative; they are accurate sundials (shadow clocks) that can be used to calculate the exact time of the day to the minute.
+The entire structure is carved with intricate stone sculptures depicting deities, dancers, musicians, animals, and erotica. Although much of the main sanctuary has collapsed, the surviving audience hall (Jagamohana) stands as a testament to the Kalinga style of architecture.
+Timings and Fees:
+- Open daily from 6:00 AM to 8:00 PM.
+- Light and Sound Show: Held every evening (typically 7:00 PM to 8:00 PM in English and Odia) showcasing the historical legends of Konark.
+- Entry Ticket Fees: Around INR 40 for Indian nationals and BIMSTEC/SAARC visitors; INR 600 for foreign tourists. Children under 15 enter free. Tickets can be booked online via the ASI website.
+- Chandrabhaga Beach: Located just 3 km from the temple, famous for beautiful sunrise views, sand art by international artists, and the sacred Chandrabhaga Mela held in February.
+        """
+    },
+    {
+        "title": "Chilika Lake - Wildlife and Boating",
+        "category": "Wildlife & Nature",
+        "content": """
+Chilika Lake is Asia's largest brackish water lagoon and the second largest coastal lagoon in the world, spreading over Puri, Khurda, and Ganjam districts of Odisha. It is a designated Ramsar Wetland Site due to its rich biodiversity.
+Key Attractions and Wildlife:
+- Irrawaddy Dolphins: Satapada is the primary dolphin sanctuary where tourists can take boat safaris to spot these rare, highly unique snub-nosed dolphins leaping in the lake.
+- Nalabana Bird Sanctuary: A flat island in the middle of Chilika that gets submerged during monsoons and emerges in winter, hosting over 160 species of migratory birds from Siberia, Caspian Sea, Lake Baikal, and remote parts of Russia. Flamingos, herons, and egrets are common.
+- Kalijai Temple: Situated on a scenic island in the middle of Chilika Lake. It is dedicated to Goddess Kalijai and is an active pilgrim spot.
+- Mangalajodi: An eco-tourism birding paradise on the northern edge of Chilika Lake, known as the 'Heaven of Water Birds'. Visitors ride silent paddle boats to get extremely close to thousands of nesting migratory birds.
+Boating and Route Details:
+- Major entry points: Satapada (near Puri, famous for dolphins) and Barkul/Rambha (on NH-16, famous for islands, scenic views, and water sports).
+- Best Time to Visit: November to February when migratory birds arrive.
+- Boat charges: Rates are fixed by the local boat associations (ranges from INR 1,500 to INR 4,000 depending on duration and dolphin/Kalijai routes).
+        """
+    },
+    {
+        "title": "Mahaprasad and the Legendary Cuisines and Sweets of Odisha",
+        "category": "Local Food",
+        "content": """
+The food of Odisha is rich, highly aromatic, flavorful, and generally utilizes less oil and spices compared to other Indian states, allowing raw flavors to shine.
+Lord Jagannath's Mahaprasad (Chappan Bhog):
+The temple kitchen (Rosaghara) of Puri Jagannath Temple is considered the largest in the world. Every day, 56 varieties of food (Chappan Bhog) are prepared by 600 temple cooks (Suaras) in earthen pots (Kudua) stacked on top of each other over firewood. The water is sourced from the sacred Ganga and Yamuna wells inside the complex. Once offered to Lord Jagannath, it becomes 'Mahaprasad' and is served to thousands of devotees daily at Anand Bazar.
+Key Components of Mahaprasad:
+1. Sankudi Bhog (Cooked Wet Foods):
+   - Sadha Anna: Plain steamed white rice.
+   - Kanika: Fragrant sweet rice cooked with ghee, sugar, raisins, and cardamoms.
+   - Khechedi: Lentil-rice khichdi flavored with pure ghee, ginger, and coconut.
+   - Dalma: A signature lentil dish slow-cooked with fresh vegetables (green papaya, pumpkin, raw banana, eggplant, yam) and tempered with pure ghee, cumin seeds, and freshly roasted cumin-chili spice powder.
+   - Besara: Mixed vegetables cooked with a rich, tangy mustard paste and tempered with panch phoron.
+   - Mahura: A sweet-and-spicy mixed vegetable curry.
+   - Saga Bhaja: Fresh green leafy spinach cooked with green gram.
+   - Mitha Dali: Sweet yellow split pea dal.
+2. Sukhila Bhog (Dry Sweets and Baked Goods):
+   - Puri Khaja: A multi-layered, extremely crispy sweet made of refined flour, deep-fried in ghee, and glazed in warm sugar syrup.
+   - Mitha Gaja: Sweet rectangular flour cakes soaked in rich sugar syrup.
+   - Magaja Ladu: Rich sweets made of roasted gram flour, ghee, sugar, and cardamoms.
+   - Arisha Pitha: Deep-fried traditional sweet pancake made of rice flour and jaggery, sprinkled with sesame seeds.
+   - Kakara Pitha: Deep-fried semolina or wheat flour pancakes stuffed with sweet grated coconut and cardamoms.
+
+Iconic Odisha Signature Sweets:
+1. Chhena Poda: The absolute king of Odia desserts, literally meaning 'Burnt Cheese'. Made from fresh cottage cheese (chhena), sugar, semolina, and cardamoms, and baked for hours (originally inside sal leaves over charcoal) until a gorgeous caramelized brown crust forms. Originates from Nayagarh district.
+2. Odia Rasagola: Soft, non-spongy, melt-in-the-mouth cheese dumplings soaked in warm sugar syrup. Historically offered as prasad to Goddess Lakshmi since the 12th century, it has received a Geographical Indication (GI) tag.
+3. Kendrapara Rasabali: Deep-fried flattened cottage cheese patties soaked in thick, cardamom-infused sweetened condensed milk (rabri). Has a GI tag.
+4. Nimapada Chhena Jhili: Soft, fresh chhena rings fried golden and glazed in a very light cardamom sugar syrup.
+5. Chhena Gaja: Rectangular logs of cottage cheese and semolina fried golden and soaked in sugar syrup.
+6. Pala Kiri / Payas: Traditional creamy rice pudding flavored with bay leaves, green cardamoms, and saffron.
+
+Savory Local Cuisines and Street Foods:
+1. Cuttack Dahibara Aloodum: The ultimate legendary street food of Odisha. Soft urad dal vadas are soaked in cold, spiced yogurt water (dahibara), served with spicy potato curry (aloodum), hot yellow peas gravy (ghuguni), and garnished with chopped onions, coriander, green chilies, and sev.
+2. Pakhala Bhata: A traditional fermented rice dish prepared by soaking cooked rice in water with a dash of curd, lemon, mint, ginger, and tempered curry leaves. Served cold during summers with side dishes like Badi Chura, fried fish, or roasted vegetables.
+3. Badi Chura: Crushed sun-dried lentil dumplings mixed with raw mustard oil, chopped onions, garlic, green chilies, and salt.
+4. Chungudi Malai Jhola: Tangy, rich prawn curry cooked in rich coconut milk and mild spices.
+5. Machha Besara: Fresh fish cooked in a signature tangy mustard paste.
+        """
+    },
+    {
+        "title": "Culture, Art and Dance of Odisha",
+        "category": "Culture & Art",
+        "content": """
+Odisha boasts a continuous rich heritage of arts, crafts, and performing classical arts:
+1. Odissi Dance: One of the oldest surviving classical dance forms of India, tracing its roots to the Natya Shastra and the temple sculptures (devadasis or maharis). Characterized by the 'Tribhangi' (three-bend posture) and exquisite facial expressions depicting love for Lord Krishna.
+2. Pattachitra Paintings: Traditional scroll painting characterized by detailed mythological narratives, natural stone colors, and fine canvas work. Raghurajpur near Puri is a designated Heritage Crafts Village where every household practices this ancient art form.
+3. Pipli Applique Work: Pipli, a small town on the Bhubaneswar-Puri highway, is world-famous for its colorful applique handicrafts. Fabric is cut and stitched onto a base fabric to create beautiful umbrellas, canopies, bags, and wall-hanging tapestries.
+4. Silver Filigree (Tarakasi): Cuttack is famous for its intricate silver filigree work, where pure silver blocks are beaten and drawn into extremely thin wires to create exquisite jewelry, decorative pieces, and massive backdrops (Chandi Medha) for Durga Puja.
+5. Sambalpuri Handlooms: Famous for its intricate 'Bandha' or ikat tie-and-dye weaving technique, creating beautiful Sambalpuri sarees, fabrics, and home furnishings.
+        """
+    },
+    {
+        "title": "Odisha Tourism Festivals Calendar",
+        "category": "Festivals",
+        "content": """
+Odisha's vibrant cultural calendar is packed with unique festivals celebrated with grand pomp:
+1. Ratha Yatra (Puri): Held in Ashadha (June/July), marking the journey of Lord Jagannath, Balabhadra, and Subhadra on grand chariots.
+2. Konark Dance Festival: Organized annually from December 1st to 5th against the stunning backdrop of the Konark Sun Temple. Renowned dancers from across the world perform classical Indian dance forms like Odissi, Kathak, Bharatanatyam, and Kathakali.
+3. Mukteshwar Dance Festival: Held in mid-January in Bhubaneswar, focusing solely on solo, duet, and group Odissi dance performances in the courtyard of the beautiful 10th-century Mukteshwar Temple.
+4. Nuakhai: The harvest festival of Western Odisha, celebrated the day after Ganesh Chaturthi. People offer the first grains of the harvest to Mother Goddesses (like Samaleswari) and seek blessings from elders.
+5. Durga Puja (Cuttack): Renowned for the unique 'Chandi Medha' where deities are adorned in silver filigree tableaus, creating a sparkling sight.
+6. Dhanu Yatra (Bargarh): The world's largest open-air theater, listed in the Guinness Book of World Records. The entire town of Bargarh becomes the kingdom of Mathura, and the residents act out the mythological story of Kansa and Krishna.
+7. Chaitra Mela (Taratarini, Ganjam): Held on Tuesdays of the Hindu month of Chaitra, drawing lakhs of pilgrims to Kumari hills.
+        """
+    },
+    {
+        "title": "Bhubaneswar The Temple City - Travel Guide",
+        "category": "Temples & Heritage",
+        "content": """
+Bhubaneswar, the capital of Odisha, is known as the 'Temple City' because it once housed over 7,000 temples. Today, hundreds of majestic stone temples dating from the 6th to 13th centuries survive.
+Key Attractions:
+1. Lingaraj Temple: The largest temple in Bhubaneswar, a magnificent 55-meter-high Kalinga stone structure dedicated to Harihara (half Shiva, half Vishnu), built in the 11th century. Non-Hindus can view it from a platform.
+2. Mukteshwar Temple: Often called the 'Gem of Kalinga Architecture' due to its famous arched stone gateway (Torana) covered in intricate carvings of maidens, monkeys, and scrolls.
+3. Rajarani Temple: Famous for its intricate red and gold sandstone sculptures and the absence of a presiding deity inside, making it an architectural monument.
+4. Khandagiri and Udayagiri Caves: Rock-cut caves located about 6 km from the city center, carved out during the 2nd century BCE by King Kharavela for Jain monks. Features historic carvings and inscriptions (Hathigumpha inscription).
+5. Dhauli Giri (Peace Pagoda): A white Buddhist dome built in 1972 on the banks of the Daya River near Bhubaneswar. This is the historic site of the Kalinga War (261 BCE), where Emperor Ashoka witnessed the bloody Daya River, renounced violence, converted to Buddhism, and erected his historic Rock Edicts (still preserved at the base).
+6. Nandankanan Zoological Park: Located on the outskirts, famous for its White Tiger Safari, Lion Safari, botanical gardens, and the Kanjia Lake boating point.
+        """
+    },
+    {
+        "title": "Sacred and Scenic Shrines of Odisha - Nilamadhaba, Taratarini, Kapilas and Dhabaleswar",
+        "category": "Temples & Heritage",
+        "content": """
+Odisha's spiritual map covers ancient temples hidden in hills, riverbanks, and islands:
+1. Nilamadhaba Temple (Kantilo, Nayagarh): Located on the Maniabhadra hill on the banks of the Mahanadi River in Kantilo, Nayagarh district. This temple is of massive historical importance as the origin place of Lord Jagannath's worship. According to legend, Lord Jagannath was originally worshipped here secretly as 'Neela Madhaba' by the tribal Sabara chief Viswavasu. The temple features a perennial holy water spring named 'Baraha Kunda'. The scenic hilltop view of the Mahanadi river makes it a highly popular pilgrimage and picnic spot. Magha Saptami is the main festival celebrated here.
+2. Taratarini Temple (Ganjam): Situated on the holy Kumari hills on the banks of the Rushikulya River near Purushottampur in Ganjam district. It is revered as one of the four major ancient Shakti Peethas in India, dedicated to the twin goddesses Tara and Tarini. The hill is accessed by climbing 999 steps or via a scenic ropeway. The Chaitra Mela (held on Tuesdays of the Hindu month of Chaitra) is the grandest festival here.
+3. Kapilas Shiva Temple (Dhenkanal): Situated at a height of 2,239 feet on the Kapilas mountain range in Dhenkanal district, often called the 'Kailash of Odisha'. Dedicated to Lord Chandrashekhar (Shiva), it was built in 1246 CE. Reached by climbing 1,352 stone steps or via a winding ghat road. Mahashivratri is celebrated with grand night-long prayers and thousands of lamps.
+4. Dhabaleswar Temple (Cuttack): Dedicated to Lord Shiva, situated on a scenic island in the middle of the Mahanadi River in Cuttack. It is famous for a historic hanging suspension footbridge that links the mainland to the island, offering beautiful river and sunset views.
+5. Biraja Temple (Jajpur): An ancient Shakti Peetha dedicated to Goddess Biraja, where the deity is worshipped as a two-armed Durga piercing Mahishasura. Located in the heritage town of Jajpur (Gadakshetra).
+6. Khiching Kichakeswari Temple (Mayurbhanj): A beautiful temple dedicated to Goddess Chamunda, constructed entirely out of blue-black chlorite stone in the Kalinga style.
+7. Chausathi Yogini Temple (Hirapur, near Bhubaneswar): One of the few active 9th-century Yogini temples in India, featuring 64 black chlorite stone carvings of Yoginis arranged in a roofless circular enclosure.
+        """
+    },
+    {
+        "title": "Western Odisha Wonders - Sambalpur, Hirakud Dam, Huma Leaning Temple and Wildlife",
+        "category": "Destinations & Landmarks",
+        "content": """
+Western Odisha is characterized by dense forests, ancient temples, handlooms, and major river reservoirs:
+1. Hirakud Dam and Reservoir: Built across the Mahanadi River near Sambalpur town, Hirakud is the longest earthen dam in the world. Features two prominent observation towers, Gandhi Minar and Jawahar Minar, offering breathtaking panoramic views of the massive reservoir. Best visited between October and March.
+2. Leaning Temple of Huma: Located in Huma village on the banks of the Mahanadi River, 23 km from Sambalpur. It is the world's only leaning temple, dedicated to Lord Shiva. The main temple structure, the boundary wall, and the smaller shrines lean at an angle of nearly 47 degrees, though the reason remains an unsolved geological mystery. The Kudo fish in the riverbed are considered sacred and are fed by devotees.
+3. Samaleswari Temple (Sambalpur): Situated on the banks of the Mahanadi, this historic 16th-century temple is dedicated to Maa Samaleswari, the presiding deity of Western Odisha. Nuakhai is the biggest festival celebrated here.
+4. Debrigarh Wildlife Sanctuary: Spanning across Baragarh and Sambalpur districts on the edge of the Hirakud reservoir. Famous for easy sightings of Indian bison (gaur), leopards, spotted deer, wild boars, and a vast population of migratory waterfowl. Offers eco-tourism cottages and boating safaris.
+5. Nrusinghanath and Harishankar Temples: Situated on the opposite sides of the scenic Gandhamardan hills. Nrusinghanath (Bargarh) features a 14th-century temple dedicated to Lord Vishnu in his cat incarnation (Marjara Keshari) beside a beautiful perennial waterfall. Harishankar (Balangir) is dedicated to Lord Shiva and Vishnu, situated amidst mountain streams, popular for natural slides and bathing pools.
+6. Ghantarini Temple (Sambalpur): Situated on the riverbanks, known as the 'Lighthouse of Bells'. Thousands of brass bells are offered by devotees whose wishes have been fulfilled.
+        """
+    },
+    {
+        "title": "Southern Odisha Tourism - Daringbadi, Gopalpur, Deomali Peak and Duduma Waterfall",
+        "category": "Destinations & Landmarks",
+        "content": """
+Southern Odisha offers high-altitude mountain peaks, quiet coastal beaches, and rich tribal heritage:
+1. Daringbadi - The Kashmir of Odisha (Kandhamal): Located in the Kandhamal district at a scenic altitude of 3,000 feet, Daringbadi is a gorgeous hill station surrounded by pine forests, coffee gardens, and turmeric valleys. It is famous for receiving sub-zero temperatures in winter, earning it its popular name. Key highlights include the Hill View Park, Lover's Point, Midubanda Waterfall, and pepper gardens. It is best reached by road from Berhampur (120 km) or Bhubaneswar (250 km).
+2. Gopalpur-on-Sea (Ganjam): A peaceful, historic beach resort town on the Bay of Bengal in Ganjam district, about 15 km from Berhampur. Once a bustling seaport under British rule, it features an ancient, highly iconic red-and-white striped Lighthouse, quiet sandy beaches, and ruins of old port godowns. Highly popular for viewing gorgeous sunrises and tasting fresh coastal seafood.
+3. Deomali Peak (Koraput): The highest mountain peak in Odisha, standing at 1,672 meters in the Eastern Ghats. Famous for hang gliding, trekking, and breathtaking valley views. Surrounded by rich flora, tribal villages, and pine groves.
+4. Duduma Waterfall (Koraput): A majestic 175-meter (574 feet) waterfall formed by the Machhkund River. Surrounded by dense deciduous forests and rugged terrain. It is home to the primitive Bonda tribe. Features a massive hydroelectric power plant at the base.
+5. Gupteswar Cave Temple (Koraput): An ancient, natural limestone cave temple dedicated to Lord Shiva, located inside the dense forest hills of the Eastern Ghats in Koraput district. The main attraction is a massive natural stone Shiva Lingam which is believed to grow in size. Popular during Shivratri.
+6. Jirang Padmasambhava Buddhist Monastery (Gajapati): Located in Chandragiri, the Padmasambhava Mahavihara is the largest Buddhist monastery in Eastern India. Features a 5-story temple, a 23-foot bronze Buddha statue, and beautiful manicured gardens. Settled by Tibetan refugees in the 1960s, it is known as 'Little Tibet'.
+7. Taptapani Hot Springs (Ganjam): A natural hot sulfur spring on a scenic hill, believed to have medicinal properties. Features a bathhouse and an OTDC eco-resort.
+        """
+    },
+    {
+        "title": "Northern and Eastern Odisha Tourism - Similipal, Bhitarkanika and Coastal Beaches",
+        "category": "Wildlife & Nature",
+        "content": """
+Northern and Eastern districts of Odisha cover vast national parks, marine sanctuaries, and rare beaches:
+1. Similipal Biosphere Reserve and National Park (Mayurbhanj): A massive tiger reserve and biosphere reserve in Mayurbhanj district, filled with dense sal forests, waterfalls (Barehipani and Joranda), wild elephants, royal Bengal tigers, leopards, and over 300 bird species. Barehipani is a two-tiered waterfall dropping from 399 meters, the highest in Odisha.
+2. Bhitarkanika National Park (Kendrapara): A unique, lush mangrove wetland ecosystem. It is home to the largest population of giant saltwater crocodiles (some over 20 feet long) in India. Accessible only by boat safaris from Gupti or Khola entry points.
+3. Gahirmatha Marine Sanctuary (Kendrapara): The world's largest nesting ground (Arribada) for the endangered Olive Ridley Sea Turtles, where millions of turtles arrive annually between November and April to lay eggs on the sandy beaches.
+4. Chandipur Vanishing Beach (Balasore): A highly unique beach where the sea water recedes up to 5 kilometers twice a day during low tide, leaving the flat sea bed fully dry, allowing visitors to walk or ride bikes literally on the ocean floor. The water returns during high tide.
+5. Talasari Beach (Balasore): A calm, peaceful beach with vast casuarina groves and red crabs crawling on the sand, located near the Bengal border.
+6. Khandadhar Waterfall (Sundergarh/Keonjhar): The second highest waterfall in Odisha, dropping from a height of 244 meters in a single vertical fall. Surrounded by thick virgin forests.
+7. Sanaghagara and Badaghagara Waterfalls (Keonjhar): Beautiful waterfalls located amidst hilly terrain and exotic pine forests, popular for trekking and family picnics.
+        """
+    },
+    {
+        "title": "Buddhist Heritage and Historical Caves of Odisha",
+        "category": "Temples & Heritage",
+        "content": """
+Odisha has a deep historical connection to Buddhism and ancient rock-cut excavations:
+1. The Buddhist Diamond Triangle (Jajpur and Cuttack): Comprises three massive 5th-13th century CE Buddhist monastic complexes:
+   - Ratnagiri: Features a grand, well-preserved stone monastery gateway, massive stone Buddha heads, multi-spire stupas, and an ASI museum.
+   - Lalitgiri: The oldest of the three sites, featuring a historic hill-top stupa where sacred gold and silver casket relics (believed to be of Lord Buddha) were excavated.
+   - Udayagiri: The largest site, featuring a beautiful ancient stepped stone well, large rock-cut sculptures, and pristine stupas.
+2. Dhauli Giri (Peace Pagoda): A white Buddhist dome built in 1972 on the banks of the Daya River near Bhubaneswar. This is the historic site of the Kalinga War (261 BCE), where Emperor Ashoka witnessed the bloody Daya River, renounced violence, converted to Buddhism, and erected his historic Rock Edicts (still preserved at the base).
+3. Khandagiri and Udayagiri Caves: 33 rock-cut cave chambers carved out during the 2nd century BCE by King Kharavela of the Mahameghavahana dynasty for Jain ascetics. Located in Bhubaneswar. Famous caves include Rani Gumpha (Queen's Cave, a double-story structure with beautiful relief carvings) and Hathigumpha (Elephant Cave, featuring the famous 17-line Brahmi inscription of King Kharavela).
+4. Langudi Hills (Jajpur): A scenic hill site featuring unique rock-cut Buddhist stupas, terracotta monasteries, and ruins of ancient Buddhist settlements.
+        """
+    },
+    {
+        "title": "Travel Route and Transportation Guide to Odisha",
+        "category": "Travel Tips",
+        "content": """
+Odisha is well-connected by air, rail, and road networks:
+1. Air: Biju Patnaik International Airport (BBI) in Bhubaneswar has direct daily flights to major Indian cities (Delhi, Mumbai, Kolkata, Bangalore, Chennai, Hyderabad) and international flights to Dubai, Singapore, and Bangkok. Jharsuguda Airport connects Western Odisha.
+2. Rail: Bhubaneswar Railway Station (BBS) and Puri Railway Station are major terminals. The East Coast Railway network links all parts of India, including direct superfast trains (Vande Bharat, Shatabdi, Rajdhani).
+3. Road: National Highway 16 (NH-16) runs through the state, connecting Kolkata to Chennai. High-quality air-conditioned buses run by OSRTC connect major tourist nodes (Bhubaneswar to Puri takes 1.5 hours; Bhubaneswar to Konark takes 1.5 hours via the Marine Drive).
+4. Local transport: Auto-rickshaws, app-based cabs (Ola, Uber), and city bus networks (Mo Bus) make intra-city transit in Bhubaneswar-Cuttack-Puri incredibly smooth and cheap.
+5. Puri-Konark Marine Drive: A scenic 35 km coastal highway running alongside the Bay of Bengal, offering gorgeous ocean views, sand forests, and access to Ramchandi beach.
+        """
+    }
+]
+
+
+class OdishaTourismScraper:
+    def __init__(self):
+        self.headers = {
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
+        }
+        self.BOOTSTRAP_DATA = BOOTSTRAP_DATA
+
+    def scrape_url(self, url: str) -> str:
+        """
+        Scrapes a URL, strips boilerplate tags, and returns clean text content.
+        """
+        try:
+            logger.info(f"Fetching URL: {url}")
+            response = requests.get(url, headers=self.headers, timeout=15)
+            if response.status_code != 200:
+                logger.error(f"Failed to fetch {url}, status code: {response.status_code}")
+                return ""
+            
+            soup = BeautifulSoup(response.content, "html.parser")
+            
+            # Remove scripts, styles, navigations, sidebars, and footers
+            for tag in soup(["script", "style", "nav", "header", "footer", "form", "iframe", "aside"]):
+                tag.decompose()
+                
+            # Specifically target Wikipedia navigation/sidebar classes to remove noise
+            for selector in [".mw-jump-link", ".toc", ".catlinks", ".reflist", ".printfooter", "#mw-navigation", ".navbox", ".infobox"]:
+                for element in soup.select(selector):
+                    element.decompose()
+
+            # Extract clean content
+            text_blocks = []
+            
+            # Capture headings and paragraphs sequentially to preserve structure
+            for element in soup.find_all(['h1', 'h2', 'h3', 'p', 'li']):
+                text = element.get_text().strip()
+                if not text:
+                    continue
+                # Normalize spaces
+                text = re.sub(r'\s+', ' ', text)
+                
+                # Append with formatting based on tag type
+                if element.name in ['h1', 'h2', 'h3']:
+                    text_blocks.append(f"\n\n### {text}\n")
+                elif element.name == 'li':
+                    text_blocks.append(f"- {text}")
+                else:
+                    text_blocks.append(text)
+                    
+            scraped_content = "\n".join(text_blocks)
+            logger.info(f"Successfully scraped {len(scraped_content)} characters from {url}")
+            return scraped_content
+            
+        except Exception as e:
+            logger.error(f"Exception while scraping {url}: {e}")
+            return ""
+
+    def parse_pdf(self, pdf_path: str) -> str:
+        """
+        Parses text from a local PDF file.
+        """
+        if not os.path.exists(pdf_path):
+            logger.warning(f"PDF file not found at {pdf_path}")
+            return ""
+            
+        try:
+            logger.info(f"Parsing PDF file: {pdf_path}")
+            reader = PdfReader(pdf_path)
+            pdf_text = []
+            
+            for i, page in enumerate(reader.pages):
+                text = page.extract_text()
+                if text:
+                    pdf_text.append(f"\n--- Page {i+1} ---\n")
+                    pdf_text.append(text)
+            
+            full_text = "\n".join(pdf_text)
+            logger.info(f"Successfully extracted {len(full_text)} characters from {pdf_path}")
+            return full_text
+            
+        except Exception as e:
+            logger.error(f"Exception while parsing PDF {pdf_path}: {e}")
+            return ""
+
+    def run_all_acquisition(self) -> dict:
+        """
+        Acquires all data (live scraping, local PDF, bootstrap),
+        saves raw outputs in data/raw/, and returns a dictionary of extracted texts.
+        """
+        results = {}
+        
+        # 1. Process Offline Bootstrap Data (Guaranteed baseline)
+        bootstrap_content = ""
+        for entry in BOOTSTRAP_DATA:
+            bootstrap_content += f"\n\n====================\n"
+            bootstrap_content += f"SOURCE: {entry['title']} ({entry['category']})\n"
+            bootstrap_content += f"====================\n"
+            bootstrap_content += entry['content']
+            
+        bootstrap_path = os.path.join(config.RAW_DATA_DIR, "bootstrap_odisha_tourism.txt")
+        with open(bootstrap_path, "w", encoding="utf-8") as f:
+            f.write(bootstrap_content.strip())
+        logger.info(f"Saved local bootstrap knowledge base to {bootstrap_path}")
+        results["bootstrap"] = bootstrap_content
+
+        # 2. Try Local PDF Parsing
+        # Search in the main folder (where first listed: c:\Users\hp\OneDrive\Desktop\my_rag\Odisha Tourism.pdf)
+        pdf_filename = "Odisha Tourism.pdf"
+        potential_paths = [
+            os.path.join(config.BASE_DIR, pdf_filename),
+            os.path.join(os.path.dirname(config.BASE_DIR), pdf_filename), # parent directory
+            os.path.join(config.RAW_DATA_DIR, pdf_filename)
+        ]
+        
+        pdf_text = ""
+        for path in potential_paths:
+            if os.path.exists(path):
+                pdf_text = self.parse_pdf(path)
+                if pdf_text:
+                    pdf_raw_path = os.path.join(config.RAW_DATA_DIR, "pdf_odisha_tourism.txt")
+                    with open(pdf_raw_path, "w", encoding="utf-8") as f:
+                        f.write(pdf_text)
+                    logger.info(f"Saved extracted PDF content to {pdf_raw_path}")
+                    results["pdf"] = pdf_text
+                    break
+        if not pdf_text:
+            logger.warning("Could not find or parse 'Odisha Tourism.pdf'. Proceeding with other sources.")
+
+        # 3. Try live web scraping (Only if internet is connected, will gracefully fallback on failure)
+        scraped_sources = []
+        for key, url in config.SCRAPE_URLS.items():
+            content = self.scrape_url(url)
+            if content:
+                file_path = os.path.join(config.RAW_DATA_DIR, f"scraped_{key}.txt")
+                with open(file_path, "w", encoding="utf-8") as f:
+                    f.write(content)
+                logger.info(f"Saved scraped data to {file_path}")
+                scraped_sources.append(content)
+                
+        if scraped_sources:
+            results["web"] = "\n\n".join(scraped_sources)
+        else:
+            logger.warning("Web scraping produced no outputs (offline/network issues). Relying on bootstrap and PDF data.")
+            
+        return results
+
+if __name__ == "__main__":
+    # Test execution
+    scraper = OdishaTourismScraper()
+    acquired = scraper.run_all_acquisition()
+    print(f"Data Acquisition completed! Sources acquired: {list(acquired.keys())}")

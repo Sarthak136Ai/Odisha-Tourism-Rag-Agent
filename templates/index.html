@@ -1,0 +1,1577 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Odisha Tourism AI Travel Agent</title>
+    
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    
+    <!-- Premium Style System -->
+    <style>
+        :root {
+            --primary: #D4AF37;       /* Marigold Gold */
+            --secondary: #E07A5F;     /* Terracotta Orange */
+            --bg: #F8F7F2;            /* Cream Sand Canvas */
+            --card-bg: #FFFFFF;
+            --text: #3D405B;          /* Deep Charcoal */
+            --accent: #81B29A;        /* Soft Olive Green */
+            --sidebar-bg: #2D3142;    /* Dark Charcoal for Sidebar */
+            --font-main: 'Outfit', sans-serif;
+            --font-hdr: 'Playfair Display', serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background-color: var(--bg);
+            color: var(--text);
+            font-family: var(--font-main);
+            display: flex;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        /* --- LAYOUT SPLIT --- */
+        .sidebar {
+            width: 320px;
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 100;
+            transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar.collapsed {
+            transform: translateX(-100%);
+        }
+
+        .main-content {
+            margin-left: 320px;
+            flex: 1;
+            padding: 2.5rem;
+            max-width: 1400px;
+            transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .main-content.collapsed {
+            margin-left: 0;
+        }
+
+        /* --- COLLAPSIBLE SIDEBAR TOGGLE --- */
+        .sidebar-toggle-btn {
+            position: fixed;
+            left: 300px; /* Sits right on the border of the 320px sidebar */
+            top: 25px;
+            z-index: 110;
+            background-color: var(--secondary);
+            color: white;
+            border: 2px solid white;
+            border-radius: 50%;
+            width: 36px;
+            height: 36px;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .sidebar-toggle-btn:hover {
+            background-color: var(--primary);
+            transform: scale(1.1);
+        }
+        .sidebar-toggle-btn.collapsed {
+            left: 15px;
+        }
+        .sidebar-toggle-btn .toggle-icon {
+            font-size: 0.9rem;
+            transition: transform 0.3s ease;
+            display: inline-block;
+        }
+        .sidebar-toggle-btn.collapsed .toggle-icon {
+            transform: rotate(180deg);
+        }
+
+        /* --- SIDEBAR COMPONENTS --- */
+        .sidebar-header {
+            text-align: center;
+            margin-bottom: 1rem;
+        }
+        .sidebar-logo {
+            width: 100%;
+            max-width: 160px;
+            height: auto;
+            margin-bottom: 0.75rem;
+            filter: drop-shadow(0 4px 12px rgba(0,0,0,0.35));
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+        }
+        .sidebar-logo:hover {
+            transform: scale(1.05);
+        }
+        .sidebar-title {
+            font-family: var(--font-hdr);
+            font-size: 1.4rem;
+            color: var(--primary);
+            letter-spacing: 0.5px;
+        }
+        .sidebar-divider {
+            border: 0;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            margin: 0.5rem 0;
+        }
+        .diagnostic-card {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            border-left: 3px solid var(--accent);
+        }
+        .diagnostic-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .badge {
+            background-color: var(--accent);
+            color: white;
+            padding: 0.15rem 0.5rem;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            font-weight: bold;
+        }
+        .badge.offline {
+            background-color: #E07A5F;
+        }
+        
+        .reindex-warning {
+            background-color: #FFF3CD;
+            border-left: 5px solid #FFC107;
+            padding: 0.75rem;
+            border-radius: 8px;
+            color: #856404;
+            font-size: 0.85rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+            line-height: 1.4;
+        }
+
+        /* --- CORE ELEMENTS --- */
+        .banner-container {
+            background-image: linear-gradient(rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.45)), url('/static/odisha_banner_panoramic_color_warm.jpg');
+            background-size: 100% 100%; /* Stretches to completely fit the container box */
+            background-position: center;
+            background-repeat: no-repeat;
+            padding: 3rem 2.5rem;
+            border-radius: 16px;
+            color: #000000; /* Black color for text */
+            text-align: center;
+            margin-bottom: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
+        }
+        .banner-title {
+            font-family: var(--font-hdr);
+            font-size: 2.8rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            letter-spacing: 1px;
+            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+        }
+        .banner-subtitle {
+            font-size: 1.15rem;
+            font-weight: 600; /* Bold for high-contrast visibility */
+            opacity: 1.0;
+        }
+
+        /* --- TABS BAR --- */
+        .tabs-header {
+            display: flex;
+            gap: 12px;
+            border-bottom: 2px solid #E2E2D9;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+        }
+        .tab-btn {
+            background: none;
+            border: none;
+            color: var(--text);
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 1.05rem;
+            padding: 0.5rem 1.2rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            opacity: 0.8;
+        }
+        .tab-btn:hover {
+            color: var(--secondary);
+            background: rgba(224, 122, 95, 0.05);
+            opacity: 1;
+        }
+        .tab-btn.active {
+            color: var(--secondary);
+            background: rgba(224, 122, 95, 0.1);
+            opacity: 1;
+        }
+        .tab-content {
+            display: none;
+        }
+        .tab-content.active {
+            display: block;
+        }
+
+        /* --- CHAT SECTION --- */
+        .chat-layout {
+            display: grid;
+            grid-template-columns: 5fr 3fr;
+            gap: 2rem;
+        }
+
+        .chat-pane {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 1.25rem;
+        }
+
+        .chips-container {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-bottom: 0.5rem;
+        }
+        .suggestion-chip {
+            background-color: white;
+            color: var(--text);
+            border: 1px solid var(--secondary);
+            border-radius: 20px;
+            padding: 0.4rem 1rem;
+            font-size: 0.85rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        .suggestion-chip:hover {
+            background-color: var(--secondary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(224, 122, 95, 0.2);
+        }
+
+        /* STRICTLY ISOLATED SCROLL MESSAGES AREA */
+        .chat-scroll-container {
+            height: 450px;
+            overflow-y: scroll;
+            padding-right: 15px;
+            margin-right: 5px;
+            border-right: 1px solid rgba(224, 122, 95, 0.15);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        
+        /* Custom scrollbar rules scoped ONLY to the chat log block */
+        .chat-scroll-container::-webkit-scrollbar {
+            width: 10px;
+            height: 10px;
+            display: block;
+        }
+        .chat-scroll-container::-webkit-scrollbar-track {
+            background: #F4F1DE;
+            border-radius: 6px;
+            box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
+        }
+        .chat-scroll-container::-webkit-scrollbar-thumb {
+            background-color: var(--secondary);
+            border-radius: 6px;
+            border: 2px solid #F4F1DE;
+        }
+        .chat-scroll-container::-webkit-scrollbar-thumb:hover {
+            background-color: var(--primary);
+        }
+
+        /* Conversational Bubbles */
+        .chat-bubble {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            line-height: 1.5;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
+            max-width: 90%;
+            word-wrap: break-word;
+        }
+        .chat-bubble.user {
+            background-color: #FFFFFF;
+            border-left: 5px solid var(--accent);
+            align-self: flex-end;
+        }
+        .chat-bubble.assistant {
+            background-color: #F4F1DE;
+            border-left: 5px solid var(--secondary);
+            align-self: flex-start;
+        }
+        .bubble-header {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            margin-bottom: 0.4rem;
+            letter-spacing: 0.5px;
+        }
+        .bubble-header.user-hdr { color: var(--accent); }
+        .bubble-header.assistant-hdr { color: var(--secondary); }
+
+        .latency-stamp {
+            font-size: 0.75rem;
+            font-style: italic;
+            opacity: 0.8;
+            margin-top: 0.5rem;
+            display: block;
+        }
+
+        /* Chat Form Elements */
+        .chat-input-form {
+            background: #FFFFFF;
+            border: 1px solid #E2E2D9;
+            border-radius: 12px;
+            padding: 0.5rem;
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        .chat-input-field {
+            flex: 1;
+            border: none;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-main);
+            font-size: 0.95rem;
+            color: var(--text);
+            background: none;
+        }
+        .chat-input-field:focus {
+            outline: none;
+        }
+
+        /* --- BUTTONS SYSTEM --- */
+        .btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.75rem 1.5rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            justify-content: center;
+        }
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(224, 122, 95, 0.3);
+        }
+        .btn-gold {
+            background-color: var(--primary);
+        }
+        .btn-gold:hover {
+            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+        }
+        .btn-sidebar {
+            width: 100%;
+            padding: 0.65rem 1rem;
+            font-size: 0.85rem;
+        }
+
+        /* --- CITATIONS DRAWER (RIGHT PANEL) --- */
+        .citations-panel {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 580px;
+            overflow-y: auto;
+        }
+        .citation-card {
+            background-color: white;
+            padding: 1.25rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            border-top: 4px solid var(--primary);
+            transition: all 0.3s ease;
+        }
+        .citation-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.15);
+        }
+        .citation-source {
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.9rem;
+        }
+        .citation-meta {
+            font-size: 0.75rem;
+            color: #777;
+            margin-bottom: 0.5rem;
+        }
+        .citation-divider {
+            border: 0;
+            border-top: 1px solid #eee;
+            margin: 0.5rem 0;
+        }
+        .citation-body {
+            font-size: 0.88rem;
+            line-height: 1.4;
+        }
+        
+        .notification-card {
+            background-color: #E8F0FE;
+            border-left: 5px solid #1A73E8;
+            padding: 1rem;
+            border-radius: 8px;
+            color: #1967D2;
+            font-weight: 600;
+            font-size: 0.95rem;
+            line-height: 1.5;
+        }
+
+        /* --- AUDIO TOUR COMPONENT --- */
+        .audio-container {
+            background: #F4F1DE;
+            border-radius: 12px;
+            padding: 1rem;
+            margin-top: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .audio-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+        .audio-title {
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+        .audio-player {
+            display: none;
+        }
+
+        /* --- WIKI & ACCORDIONS (TAB 3) --- */
+        .wiki-layout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+        }
+        .wiki-col {
+            background: white;
+            border-radius: 16px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+        .wiki-hdr {
+            font-family: var(--font-hdr);
+            font-size: 1.5rem;
+            color: var(--secondary);
+            border-bottom: 2px solid var(--primary);
+            padding-bottom: 0.4rem;
+            margin-bottom: 0.5rem;
+        }
+        .accordion-item {
+            border: 1px solid #E2E2D9;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        .accordion-trigger {
+            background: #F8F7F2;
+            padding: 1rem;
+            width: 100%;
+            text-align: left;
+            border: none;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .accordion-content {
+            padding: 0;
+            max-height: 0;
+            overflow: hidden;
+            background: white;
+            transition: all 0.3s cubic-bezier(0, 1, 0, 1);
+            font-size: 0.9rem;
+            line-height: 1.5;
+        }
+        .accordion-item.active .accordion-content {
+            padding: 1rem;
+            max-height: 1000px;
+            border-top: 1px solid #E2E2D9;
+            transition: all 0.3s ease-out;
+        }
+
+        /* --- ITINERARY SECTION (TAB 2) --- */
+        .itinerary-layout {
+            display: grid;
+            grid-template-columns: 2fr 3fr;
+            gap: 2rem;
+        }
+        .itinerary-form-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+        }
+        .itinerary-view-card {
+            background: white;
+            border-radius: 16px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            max-height: 600px;
+            overflow-y: auto;
+            line-height: 1.6;
+        }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+        .form-label {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--text);
+        }
+        .form-select, .form-input {
+            width: 100%;
+            border: 1px solid #E2E2D9;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-family: var(--font-main);
+            font-size: 0.95rem;
+            color: var(--text);
+            background-color: white;
+        }
+        .form-select:focus, .form-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        .itinerary-result-display {
+            font-size: 0.98rem;
+            white-space: pre-line;
+        }
+        .itinerary-result-display h1 {
+            font-family: var(--font-hdr);
+            font-size: 1.8rem;
+            color: var(--secondary);
+            margin-bottom: 1rem;
+        }
+        .itinerary-result-display h2 {
+            font-family: var(--font-hdr);
+            font-size: 1.4rem;
+            color: var(--primary);
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .itinerary-result-display h3 {
+            font-size: 1.1rem;
+            color: var(--secondary);
+            margin-top: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* --- SIDEBAR NAVIGATION TABS --- */
+        .sidebar-nav-btn {
+            background: none;
+            border: none;
+            color: rgba(255, 255, 255, 0.7);
+            font-family: var(--font-main);
+            font-weight: 500;
+            font-size: 1.05rem;
+            padding: 0.8rem 1.2rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .sidebar-nav-btn:hover {
+            color: white;
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateX(4px);
+        }
+        .sidebar-nav-btn.active {
+            color: var(--primary);
+            background: rgba(255, 255, 255, 0.12);
+            font-weight: 600;
+            border-left: 4px solid var(--primary);
+            border-radius: 0 8px 8px 0;
+            padding-left: 0.95rem;
+        }
+
+        /* --- SPINNING UTILITIES --- */
+        .spinner {
+            border: 3px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top: 3px solid white;
+            width: 20px;
+            height: 20px;
+            animation: spin 1s linear infinite;
+            display: inline-block;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* --- FLOATING SITE SUPPORT WIDGET --- */
+        .support-launcher {
+            position: fixed;
+            bottom: 25px;
+            right: 25px;
+            width: 56px;
+            height: 56px;
+            background-color: var(--sidebar-bg);
+            border: 3px solid var(--primary);
+            border-radius: 50%;
+            cursor: pointer;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+            transition: all 0.3s ease;
+        }
+        .support-launcher:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+        }
+        
+        .support-widget {
+            position: fixed;
+            bottom: 95px;
+            right: 25px;
+            width: 360px;
+            height: 480px;
+            background-color: white;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            z-index: 999;
+            border: 1px solid #E2E2D9;
+            animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        @keyframes slideUp {
+            from { transform: translateY(20px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        
+        .support-header {
+            background-color: var(--sidebar-bg);
+            color: white;
+            padding: 0.85rem 1rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 3px solid var(--primary);
+        }
+        .support-close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.5rem;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .support-close-btn:hover {
+            opacity: 1;
+        }
+        
+        .support-body {
+            flex: 1;
+            padding: 1rem;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            background-color: #F8F7F2;
+        }
+        
+        .support-msg {
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            max-width: 85%;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .support-msg.system {
+            background-color: #FFFFFF;
+            color: var(--text);
+            border-left: 4px solid var(--accent);
+            align-self: flex-start;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+        }
+        .support-msg.user {
+            background-color: var(--secondary);
+            color: white;
+            align-self: flex-end;
+            box-shadow: 0 2px 8px rgba(224, 122, 95, 0.15);
+        }
+        
+        .support-footer {
+            padding: 0.75rem;
+            border-top: 1px solid #E2E2D9;
+            background-color: white;
+            display: flex;
+            gap: 8px;
+            margin: 0;
+        }
+        .support-input {
+            flex: 1;
+            border: 1px solid #E2E2D9;
+            border-radius: 8px;
+            padding: 0.5rem 0.75rem;
+            font-family: var(--font-main);
+            font-size: 0.88rem;
+        }
+        .support-input:focus {
+            outline: none;
+            border-color: var(--secondary);
+        }
+        .support-send-btn {
+            background-color: var(--secondary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 0.5rem 1rem;
+            font-family: var(--font-main);
+            font-weight: 600;
+            font-size: 0.88rem;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .support-send-btn:hover {
+            background-color: var(--primary);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =======================================================================
+         STAGE 1: SIDEBAR DIAGNOSTICS
+         ======================================================================= -->
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2 class="sidebar-title">ODISHA TOURISM</h2>
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+        <!-- Language selector at the top of the tabs list -->
+        <div class="form-group" style="padding: 0 0.5rem; margin-bottom: 0.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+            <label class="form-label" style="color: rgba(255,255,255,0.85); font-size: 0.85rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px;">🌐 Select Language:</label>
+            <select class="form-select" id="lang-selector" style="background-color: var(--sidebar-bg); border-color: rgba(255,255,255,0.2); color: white; padding: 0.5rem 0.75rem; font-size: 0.9rem;">
+                {% for key, val in languages.items() %}
+                <option value="{{ key }}">{{ val }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        
+        <div class="sidebar-divider"></div>
+        
+        <!-- Premium Sidebar Navigation Tabs Menu -->
+        <div class="sidebar-nav" style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <button class="sidebar-nav-btn active" onclick="switchSidebarTab(event, 'tab-about')">
+                <span>🛕 About the Agent</span>
+            </button>
+            <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-chat')">
+                <span>💬 Live AI Chatbot</span>
+            </button>
+            <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-itinerary')">
+                <span>🗺️ Custom Itinerary</span>
+            </button>
+            <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-diagnostics')">
+                <span>⚙️ System Diagnostics</span>
+            </button>
+        </div>
+    </div>
+
+
+    <!-- =======================================================================
+         STAGE 2: MAIN PANEL CONTROLS
+         ======================================================================= -->
+    <div class="main-content">
+        <!-- Sidebar Toggle Option -->
+        <button class="sidebar-toggle-btn" id="sidebar-toggle" onclick="toggleSidebar()" aria-label="Toggle Sidebar">
+            <span class="toggle-icon">◀</span>
+        </button>
+        
+        <!-- Welcome banner taglines -->
+        <div class="banner-container">
+            <div class="banner-title">Odisha Tourism AI Travel Agent</div>
+            <div class="banner-subtitle">Explore "Odisha's Best Kept Secret" powered by fully secure, local generative AI</div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 0: ABOUT THE AGENT
+             =================================================================== -->
+        <div id="tab-about" class="tab-content active">
+            <h4 style="font-family: var(--font-hdr); font-size: 2.2rem; color: var(--secondary); margin-bottom: 0.5rem;">🛕 About Odisha AI Travel Companion</h4>
+            <p style="font-size: 1.05rem; margin-bottom: 2rem; opacity: 0.8; line-height: 1.6;">
+                Welcome to your fully automated, hyper-local guide to Odisha! This assistant is engineered as a state-of-the-art 
+                <strong>RAG (Retrieval-Augmented Generation) Travel Agent</strong>. It utilizes local embeddings, a hybrid exact-match 
+                vector search database, and robust LLM generation to answer your questions using strictly verified government records, temple protocols, and culinary history.
+            </p>
+            
+            <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+                <!-- Tech Stack Detail Card -->
+                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--accent); background: #FFFFFF;">
+                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--accent); margin-bottom: 1rem;">🚀 Key Features & Capabilities</h3>
+                    <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem; line-height: 1.5; color: var(--text);">
+                        <li><strong>Live Conversational Chatbot</strong>: Real-time responses with citations pulling context from official tourism resources.</li>
+                        <li><strong>Day-by-Day Itinerary Planner</strong>: Custom travel route generation with flexible duration and travel pace options.</li>
+                        <li><strong>Local Attractions Encyclopedia</strong>: Offline historical guides, timings, and entry rules for Odisha's premium landmarks.</li>
+                        <li><strong>Authentic Culinary Guide</strong>: Local food search highlighting Lord Jagannath's sacred Mahaprasad first.</li>
+                    </ul>
+                    
+                    <div style="margin-top: 1.5rem; background: #E8F0FE; padding: 1rem; border-radius: 8px; font-size: 0.88rem; color: #1967D2; line-height: 1.4;">
+                        💡 <strong>Local Privacy Guarantee</strong>: All embeddings and vector checks are executed 100% locally on your machine for zero third-party telemetry.
+                    </div>
+                </div>
+                
+                <!-- Welcome Info / Gallery Card -->
+                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--primary); background: #FFFFFF; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                    <span style="font-size: 4.5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">🛕</span>
+                    <h3 style="font-family: var(--font-hdr); font-size: 1.6rem; color: var(--primary); margin-bottom: 0.5rem;">Odisha's Best Kept Secret</h3>
+                    <p style="font-size: 0.95rem; line-height: 1.5; opacity: 0.8; color: var(--text);">
+                        From the architectural masterclass of the Konark Sun Temple to the pristine sands of Puri Beach and the exotic biodiversity of Chilika Lake, let our AI help you explore the land of art, classical dance, and sacred heritage.
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 4: SYSTEM DIAGNOSTICS & CONTROLS
+             =================================================================== -->
+        <div id="tab-diagnostics" class="tab-content">
+            <h4 style="font-family: var(--font-hdr); font-size: 2.2rem; color: var(--secondary); margin-bottom: 0.5rem;">⚙️ System Settings & Diagnostics</h4>
+            <p style="font-size: 1.05rem; margin-bottom: 2rem; opacity: 0.8; line-height: 1.6;">
+                Configure the LLM models, view real-time vector database document status, and trigger the background indexing engine.
+            </p>
+            
+            <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;">
+                <!-- Model Selector and Status Indicators Card -->
+                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--primary); background: #FFFFFF;">
+                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--primary); margin-bottom: 1.25rem;">🤖 Model Setup & Diagnostic Status</h3>
+                    
+                    <!-- Model selector -->
+                    <div class="form-group" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
+                        <label class="form-label">🤖 Select active LLM Model:</label>
+                        <select class="form-select" id="model-selector" style="background-color: white; border-color: #E2E2D9; color: var(--text);">
+                            <!-- Dynamically populated via javascript diagnostics -->
+                            <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
+                        </select>
+                    </div>
+
+                    <!-- System Diagnostics Card -->
+                    <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 0.5rem;">Diagnostics Connection:</h4>
+                    <div class="diagnostic-card" style="background: rgba(0, 0, 0, 0.03); color: var(--text); border-left-color: var(--accent); margin-bottom: 1.5rem; border: 1px solid #E2E2D9; border-left: 3px solid var(--accent);">
+                        <div class="diagnostic-row" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Groq Connectivity:</span>
+                            <span class="badge" id="diag-ollama">PENDING</span>
+                        </div>
+                        <div class="diagnostic-row" style="margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span>Active Model:</span>
+                            <span id="diag-model" style="font-weight: 600;">`llama-3.1-8b-instant`</span>
+                        </div>
+                        <div class="diagnostic-row" style="margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center;">
+                            <span>Vector Database:</span>
+                            <span id="diag-db-count" style="font-weight: 600;">0 chunks</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Database Sync Card -->
+                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--accent); background: #FFFFFF;">
+                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--accent); margin-bottom: 1.25rem;">🔄 Knowledge Base Sync & Rebuild</h3>
+                    
+                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                        <div class="reindex-warning" style="margin-bottom: 1rem; background-color: #FFF3CD; border-left: 5px solid #FFC107; padding: 1rem; border-radius: 8px; color: #856404; font-size: 0.9rem; line-height: 1.5; font-weight: 500;">
+                            ⚠️ <strong>Rebuild Index</strong>: Triggers automated web scrapers to crawl verified sources and rebuild the local search indexes. This process takes 30-60 seconds to process text and embeddings.
+                        </div>
+                        <button class="btn btn-gold" id="reindex-btn" onclick="triggerReindex()" style="width: 100%; padding: 1.0rem;">
+                            <span>Index & Rebuild Vector DB</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ===================================================================
+             TAB 1: LIVE CHATBOT INTERFACE
+             =================================================================== -->
+        <div id="tab-chat" class="tab-content">
+            
+            <!-- suggested question chips -->
+            <div style="margin-bottom: 1rem;">
+                <h5 style="font-size: 0.9rem; margin-bottom: 0.5rem; opacity: 0.9;">💡 Suggested Tourist Queries:</h5>
+                <div class="chips-container">
+                    <button class="suggestion-chip" onclick="triggerSuggestion('What are the rules, timings, and dress codes for entering the Puri Jagannath Temple?')">Puri Temple Entry Rules 🕌</button>
+                    <button class="suggestion-chip" onclick="triggerSuggestion('How do the carved wheels of Konark Sun Temple work as sundials?')">Konark Wheel Mechanism ☀️</button>
+                    <button class="suggestion-chip" onclick="triggerSuggestion('Where and when can I spot Irrawaddy Dolphins and migratory birds in Chilika?')">Chilika Lake Dolphins 🐬</button>
+                    <button class="suggestion-chip" onclick="triggerSuggestion('What are the local cuisines and signature sweets of Odisha I must try?')">Traditional Odia Cuisines 🍲</button>
+                </div>
+            </div>
+
+            <div class="chat-layout">
+                <!-- Chat Window Column (Left) -->
+                <div>
+                    <div class="chat-pane">
+                        <h4 style="font-size: 1.15rem; border-bottom: 1px solid #E2E2D9; padding-bottom: 0.5rem; color: var(--secondary);">🗣️ Conversational Guide</h4>
+                        
+                        <!-- Dynamic Chat input and scroll stack -->
+                        <div id="chat-wrapper" style="display: flex; flex-direction: column; gap: 1rem;">
+                            
+                            <!-- UPPER BOX STATUS (Visible when chat is empty) -->
+                            <div id="empty-chat-box">
+                                <p style="color: #777; font-size: 0.9rem; margin-bottom: 0.5rem;">Start your travel planning by asking your first question below:</p>
+                                <form class="chat-input-form" onsubmit="handleChatSubmit(event, 'empty_chat_form')">
+                                    <input type="text" class="chat-input-field" id="chat-input-empty" placeholder="Ask about temples, cuisines, dolphins, rules...">
+                                    <button type="submit" class="btn">Send 📤</button>
+                                </form>
+                            </div>
+
+                            <!-- POPULATED CONVERSATIONAL LOG (Hidden initially, appears on first query) -->
+                            <div id="chat-history-container" class="chat-scroll-container" style="display: none;">
+                                <!-- Chat dialogue bubbles injected here -->
+                            </div>
+
+                            <!-- BOTTOM INPUT FIELD (Appears when empty box goes down) -->
+                            <div id="active-chat-box" style="display: none;">
+                                <form class="chat-input-form" onsubmit="handleChatSubmit(event, 'active_chat_form')">
+                                    <input type="text" class="chat-input-field" id="chat-input-active" placeholder="Ask about temples, cuisines, dolphins, rules...">
+                                    <button type="submit" class="btn">Send 📤</button>
+                                </form>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Citations Drawer Column (Right) -->
+                <div>
+                    <div class="citations-panel" id="citations-container">
+                        <h4 style="font-size: 1.15rem; color: var(--text);">📑 Verified Sources & Citations</h4>
+                        <p style="color: var(--text); font-size: 0.9rem; opacity: 0.9; font-weight: 500; margin-bottom: 0.5rem;">Context chunks retrieved in real-time from the local vector database used to formulate the guide's answer.</p>
+                        
+                        <!-- Citation card placeholder -->
+                        <div class="notification-card" id="citation-placeholder">
+                            Ask a question to see real-time vector citations and source page tracking.
+                        </div>
+                    </div>
+                    
+
+                </div>
+            </div>
+
+        </div>
+
+
+        <!-- ===================================================================
+             TAB 2: INTERACTIVE ITINERARY PLANNER
+             =================================================================== -->
+        <div id="tab-itinerary" class="tab-content">
+            <h4 style="font-size: 1.4rem; color: var(--secondary); margin-bottom: 0.5rem;">🗺️ Custom Travel Plan Generator</h4>
+            <p style="font-size: 0.95rem; margin-bottom: 1.5rem; opacity: 0.8;">Generate a bespoke travel itinerary drawing directly from verified vector-database sources.</p>
+            
+            <div class="itinerary-layout">
+                <!-- Preferences Form Card -->
+                <div class="itinerary-form-card">
+                    <div class="form-group">
+                        <label class="form-label">Target Destination Hub:</label>
+                        <select class="form-select" id="itinerary-dest" onchange="toggleCustomDest(this.value)">
+                            <option value="Puri & Konark (Spiritual & Heritage)">Puri & Konark (Spiritual & Heritage)</option>
+                            <option value="Bhubaneswar (Temple City & Caves)">Bhubaneswar (Temple City & Caves)</option>
+                            <option value="Chilika Lake & Nature Sanctuaries">Chilika Lake & Nature Sanctuaries</option>
+                            <option value="Custom Target">Custom Target</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" id="custom-dest-group" style="display: none;">
+                        <label class="form-label">Specify City / Attraction:</label>
+                        <input type="text" class="form-input" id="itinerary-custom-dest" value="Sambalpur">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Duration (Days):</label>
+                        <input type="number" class="form-input" id="itinerary-duration" min="1" max="7" value="3">
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">Travel Pace:</label>
+                        <select class="form-select" id="itinerary-pace">
+                            <option value="relaxed">Relaxed</option>
+                            <option value="balanced" selected>Balanced</option>
+                            <option value="intense">Intense</option>
+                        </select>
+                    </div>
+
+                    <button class="btn btn-gold" id="itinerary-gen-btn" onclick="generateItinerary()">Generate Travel Itinerary 🚀</button>
+                </div>
+
+                <!-- Display plan render card -->
+                <div class="itinerary-view-card" id="itinerary-viewer">
+                    <div class="notification-card">
+                        Your custom travel schedule will render here. Choose options and click generate above!
+                    </div>
+                </div>
+            </div>
+
+
+    </div>
+
+
+    <!-- =======================================================================
+         STAGE 3: CLIENT AJAX FECH HANDLERS
+         ======================================================================= -->
+    <script>
+        // Track response text for voice syntheses
+        let activeResponseText = "";
+        
+        // Toggle Sidebar Option
+        function toggleSidebar() {
+            const sidebar = document.querySelector(".sidebar");
+            const mainContent = document.querySelector(".main-content");
+            const toggleBtn = document.getElementById("sidebar-toggle");
+            
+            sidebar.classList.toggle("collapsed");
+            mainContent.classList.toggle("collapsed");
+            toggleBtn.classList.toggle("collapsed");
+        }
+        
+        // Fetch diagnostics on page load
+        document.addEventListener("DOMContentLoaded", () => {
+            fetchDiagnostics();
+        });
+
+        // Fetch API diagnostics
+        function fetchDiagnostics() {
+            fetch("/api/diagnostics")
+                .then(res => res.json())
+                .then(data => {
+                    const statusSpan = document.getElementById("diag-ollama");
+                    if (data.ollama_active) {
+                        statusSpan.innerText = "🟢 ONLINE";
+                        statusSpan.className = "badge";
+                    } else {
+                        statusSpan.innerText = "🔴 OFFLINE";
+                        statusSpan.className = "badge offline";
+                    }
+
+                    document.getElementById("diag-model").innerText = "`" + data.active_model + "`";
+                    document.getElementById("diag-db-count").innerText = data.db_document_count + " chunks";
+                    
+                    // Populate models selector
+                    const modelSelector = document.getElementById("model-selector");
+                    modelSelector.innerHTML = "";
+                    data.supported_models.forEach(m => {
+                        const opt = document.createElement("option");
+                        opt.value = m;
+                        opt.innerText = m;
+                        modelSelector.appendChild(opt);
+                    });
+                })
+                .catch(err => {
+                    console.error("Error checking diagnostics:", err);
+                    document.getElementById("diag-ollama").innerText = "🔴 OFFLINE";
+                    document.getElementById("diag-ollama").className = "badge offline";
+                });
+        }
+
+        // Tab Switching for Sidebar
+        function switchSidebarTab(evt, tabName) {
+            const contents = document.querySelectorAll(".tab-content");
+            contents.forEach(c => c.classList.remove("active"));
+            
+            const buttons = document.querySelectorAll(".sidebar-nav-btn");
+            buttons.forEach(b => b.classList.remove("active"));
+            
+            document.getElementById(tabName).classList.add("active");
+            if (evt) {
+                evt.currentTarget.classList.add("active");
+            }
+        }
+
+        // Accordion switching
+        function toggleAccordion(btn) {
+            const item = btn.parentElement;
+            item.classList.toggle("active");
+        }
+
+        // Custom Destination Input Visibility
+        function toggleCustomDest(val) {
+            const group = document.getElementById("custom-dest-group");
+            if (val === "Custom Target") {
+                group.style.display = "flex";
+            } else {
+                group.style.display = "none";
+            }
+        }
+
+        // Index Vector Database Rebuilds
+        function triggerReindex() {
+            const reindexBtn = document.getElementById("reindex-btn");
+            reindexBtn.disabled = true;
+            reindexBtn.innerHTML = '<span class="spinner"></span> <span>Indexing...</span>';
+            
+            fetch("/api/reindex", { method: "POST" })
+                .then(res => res.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(data.message);
+                        fetchDiagnostics();
+                    } else {
+                        alert("Error: " + data.error);
+                    }
+                })
+                .catch(err => {
+                    alert("Rebuilding database failed. Ensure system backend server is running.");
+                    console.error(err);
+                })
+                .finally(() => {
+                    reindexBtn.disabled = false;
+                    reindexBtn.innerHTML = "<span>Index & Rebuild Vector DB</span>";
+                });
+        }
+
+        // Trigger suggested question chips
+        function triggerSuggestion(queryText) {
+            const chatInputEmpty = document.getElementById("chat-input-empty");
+            const chatInputActive = document.getElementById("chat-input-active");
+            
+            chatInputEmpty.value = queryText;
+            chatInputActive.value = queryText;
+            
+            // Execute form trigger based on visibility
+            if (document.getElementById("empty-chat-box").style.display !== "none") {
+                handleChatSubmit(null, 'empty_chat_form');
+            } else {
+                handleChatSubmit(null, 'active_chat_form');
+            }
+        }
+
+        // Lightweight markdown parsing function for assistant chat bubbles
+        function formatMarkdown(text) {
+            if (!text) return "";
+            
+            // 0. Preprocess: If bullet points are squished on the same line, defensively insert a newline
+            // e.g. "history. * **Puri Beach**" becomes "history.\n* **Puri Beach**"
+            let processedText = text.replace(/([^\n])\s*([\*\-])\s+\*\*/g, '$1\n$2 **');
+            
+            // 1. Escape basic HTML tags to be secure
+            let html = processedText
+                .replace(/&/g, "&amp;")
+                .replace(/</g, "&lt;")
+                .replace(/>/g, "&gt;");
+                
+            // 2. Handle horizontal rules
+            html = html.replace(/^---$/gm, '<hr style="border: 0; border-top: 1px solid rgba(224, 122, 95, 0.15); margin: 0.8rem 0;">');
+            
+            // 3. Handle bold markdown **bold**
+            html = html.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+            
+            // 4. Handle headers #, ##, ###
+            html = html.replace(/^# (.*$)/gim, '<h3 style="font-family: var(--font-hdr); font-size: 1.3rem; color: var(--secondary); margin-top: 1rem; margin-bottom: 0.5rem;">$1</h3>');
+            html = html.replace(/^## (.*$)/gim, '<h4 style="font-family: var(--font-hdr); font-size: 1.15rem; color: var(--primary); margin-top: 0.8rem; margin-bottom: 0.4rem;">$1</h4>');
+            html = html.replace(/^### (.*$)/gim, '<h5 style="font-family: var(--font-main); font-size: 1.05rem; color: var(--text); font-weight: 600; margin-top: 0.6rem; margin-bottom: 0.3rem;">$1</h5>');
+            
+            // 5. Handle list items: * **Name** — Description
+            html = html.replace(/^\s*[\*\-]\s+(.*)$/gim, '<li style="margin-left: 1.25rem; margin-bottom: 0.4rem; list-style-type: disc;">$1</li>');
+            
+            // 6. Split by line and reconstruct lists & paragraph blocks
+            let lines = html.split('\n');
+            let insideList = false;
+            let processedLines = [];
+            
+            for (let i = 0; i < lines.length; i++) {
+                let line = lines[i].trim();
+                if (!line) {
+                    processedLines.push('<div style="height: 0.5rem;"></div>');
+                    continue;
+                }
+                
+                if (line.startsWith('<li')) {
+                    if (!insideList) {
+                        insideList = true;
+                        processedLines.push('<ul style="margin-bottom: 0.5rem; padding-left: 0.5rem;">');
+                    }
+                    processedLines.push(line);
+                } else {
+                    if (insideList) {
+                        insideList = false;
+                        processedLines.push('</ul>');
+                    }
+                    
+                    if (line.startsWith('<h') || line.startsWith('<hr') || line.startsWith('<div')) {
+                        processedLines.push(line);
+                    } else {
+                        processedLines.push(`<p style="margin-bottom: 0.5rem; line-height: 1.6;">${line}</p>`);
+                    }
+                }
+            }
+            if (insideList) {
+                processedLines.push('</ul>');
+            }
+            
+            return processedLines.join('\n');
+        }
+
+        // Conversational Layout transition on Submit
+        function handleChatSubmit(event, formType) {
+            if (event) event.preventDefault();
+            
+            const activeModel = document.getElementById("model-selector").value;
+            const activeLang = document.getElementById("lang-selector").value;
+            
+            let queryField = null;
+            if (formType === 'empty_chat_form') {
+                queryField = document.getElementById("chat-input-empty");
+            } else {
+                queryField = document.getElementById("chat-input-active");
+            }
+            
+            const query = queryField.value.trim();
+            if (!query) return;
+            
+            // 1. Transition the chat input boxes
+            document.getElementById("empty-chat-box").style.display = "none";
+            document.getElementById("chat-history-container").style.display = "flex";
+            document.getElementById("active-chat-box").style.display = "block";
+            
+            // Clear inputs
+            document.getElementById("chat-input-empty").value = "";
+            document.getElementById("chat-input-active").value = "";
+            
+            // Append User Question bubble in Flat HTML format
+            const chatHistory = document.getElementById("chat-history-container");
+            chatHistory.innerHTML += `<div class="chat-bubble user"><div class="bubble-header user-hdr">User</div><div>${query}</div></div>`;
+            chatHistory.scrollTop = chatHistory.scrollHeight; // Auto-scroll to bottom
+ 
+            // Show Thinking Bubble
+            const thinkingId = "thinking-" + Date.now();
+            chatHistory.innerHTML += `<div class="chat-bubble assistant" id="${thinkingId}"><div class="bubble-header assistant-hdr">Ollama Guide</div><div><span class="spinner" style="border-top-color: var(--secondary);"></span> <em>Typing active response...</em></div></div>`;
+            chatHistory.scrollTop = chatHistory.scrollHeight;
+ 
+            // Clear existing right drawer citations immediately and show loading card
+            const citationsContainer = document.getElementById("citations-container");
+            const headerHtml = '<h4 style="font-size: 1.15rem; color: var(--text);">📑 Verified Sources & Citations</h4><p style="color: var(--text); font-size: 0.9rem; opacity: 0.9; font-weight: 500; margin-bottom: 0.5rem;">Context chunks retrieved in real-time from the local vector database used to formulate the guide\'s answer.</p>';
+            citationsContainer.innerHTML = headerHtml + '<div class="notification-card" id="citation-placeholder"><span class="spinner" style="border-top-color: var(--primary); width:15px; height:15px;"></span> <em>Retrieving local context chunks...</em></div>';
+ 
+            const thinkingBubble = document.getElementById(thinkingId);
+            let accumulatedAnswer = "";
+ 
+            // Fetch RAG response via streaming stream reader
+            fetch("/api/chat", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ query: query, model: activeModel, language: activeLang })
+            })
+            .then(res => {
+                if (!res.ok) {
+                    throw new Error("HTTP error " + res.status);
+                }
+                const reader = res.body.getReader();
+                const decoder = new TextDecoder("utf-8");
+                let buffer = "";
+ 
+                function read() {
+                    return reader.read().then(({ done, value }) => {
+                        if (done) {
+                            return;
+                        }
+                        buffer += decoder.decode(value, { stream: true });
+                        const lines = buffer.split("\n");
+                        buffer = lines.pop(); // keep partial line in buffer
+ 
+                        let currentEvent = "";
+                        for (let line of lines) {
+                            line = line.trim();
+                            if (!line) continue;
+                            if (line.startsWith("event:")) {
+                                currentEvent = line.replace("event:", "").trim();
+                            } else if (line.startsWith("data:")) {
+                                const rawData = line.replace("data:", "").trim();
+                                try {
+                                    const parsed = JSON.parse(rawData);
+                                    if (currentEvent === "citations") {
+                                        // Draw citations in the right drawer immediately!
+                                        const placeholder = document.getElementById("citation-placeholder");
+                                        if (placeholder) placeholder.remove();
+                                        
+                                        if (parsed && parsed.length > 0) {
+                                            parsed.forEach((cit, index) => {
+                                                const card = document.createElement("div");
+                                                card.className = "citation-card";
+                                                card.innerHTML = `
+                                                    <div class="citation-source">Citation ${index + 1}: ${cit.source}</div>
+                                                    <div class="citation-meta">File: ${cit.filename} | Chunk ID: ${cit.chunk_index}</div>
+                                                    <hr class="citation-divider">
+                                                    <div class="citation-body">"${cit.content}"</div>
+                                                `;
+                                                citationsContainer.appendChild(card);
+                                            });
+                                        } else {
+                                            citationsContainer.innerHTML += '<div class="notification-card">No citations parsed for this query.</div>';
+                                        }
+                                    } else if (currentEvent === "token") {
+                                        // Append token to bubble content
+                                        accumulatedAnswer += parsed.token;
+                                        // Update assistant bubble content in real-time, removing loading text
+                                        thinkingBubble.innerHTML = `<div class="bubble-header assistant-hdr">Ollama Guide</div><div>${formatMarkdown(accumulatedAnswer)}</div>`;
+                                        chatHistory.scrollTop = chatHistory.scrollHeight;
+                                    } else if (currentEvent === "done") {
+                                        // Process final text & latency stats
+                                        
+                                        thinkingBubble.innerHTML = `<div class="bubble-header assistant-hdr">Ollama Guide</div><div>${formatMarkdown(parsed.answer)}</div><span class="latency-stamp">⏱️ Generated locally in ${parsed.duration} seconds.</span>`;
+                                        chatHistory.scrollTop = chatHistory.scrollHeight;
+                                    }
+                                } catch (e) {
+                                    console.error("Error parsing stream line:", e, line);
+                                }
+                            }
+                        }
+                        return read();
+                    });
+                }
+                return read();
+            })
+            .catch(err => {
+                console.error("RAG pipeline streaming failed:", err);
+                thinkingBubble.innerHTML = `<div class="bubble-header assistant-hdr">Ollama Guide</div><div>Error: Connection failed. Verify active backend Flask/Ollama service.</div>`;
+            });
+        }
+
+
+
+        // Generate customized day-by-day Itinerary
+        function generateItinerary() {
+            const destSelect = document.getElementById("itinerary-dest").value;
+            let targetDest = destSelect;
+            if (destSelect === "Custom Target") {
+                targetDest = document.getElementById("itinerary-custom-dest").value;
+            }
+            
+            const duration = document.getElementById("itinerary-duration").value;
+            const pace = document.getElementById("itinerary-pace").value;
+            const genBtn = document.getElementById("itinerary-gen-btn");
+            
+            genBtn.disabled = true;
+            genBtn.innerHTML = '<span class="spinner"></span> <span>Mapping routes...</span>';
+            
+            fetch("/api/itinerary", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ destination: targetDest, duration: duration, pace: pace })
+            })
+            .then(res => res.json())
+            .then(data => {
+                const viewer = document.getElementById("itinerary-viewer");
+                
+                if (data.error) {
+                    viewer.innerHTML = `<div class="notification-card" style="border-left-color: var(--secondary); color: var(--secondary);">Generation Error: ${data.error}</div>`;
+                    return;
+                }
+                
+                // Keep plan text globally on viewer attribute for PDF download requests
+                viewer.dataset.activePlanText = data.itinerary;
+                viewer.dataset.activeDest = targetDest;
+                viewer.dataset.activeDur = duration + " Days";
+
+                // Map markdown outline structure beautifully to HTML viewer
+                const styledMarkdown = data.itinerary
+                    // 1. Remove standalone # or ## symbols on their own lines
+                    .replace(/^\s*#+\s*$/gm, '')
+                    // 2. Match standard headers (globally and per line)
+                    .replace(/^#\s+(.*)/gm, '<h1>$1</h1>')
+                    .replace(/^##\s+(.*)/gm, '<h2>$1</h2>')
+                    .replace(/^###\s+(.*)/gm, '<h3>$1</h3>')
+                    // 3. Match bulleted lists (either * or -) with bold headers
+                    .replace(/^[\*\-]\s+\*\*(.*?)\*\*(.*)/gm, '<li><strong>$1</strong>$2</li>')
+                    .replace(/^[\*\-]\s+(.*)/gm, '<li>$1</li>')
+                    // 4. Robust bolding inside paragraphs
+                    .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                    // 5. Paragraph spacers
+                    .replace(/\n\n/g, '<p style="margin-bottom: 0.75rem;"></p>');
+
+                viewer.innerHTML = `
+                    <div class="itinerary-result-display">
+                        ${styledMarkdown}
+                    </div>
+                `;
+            })
+            .catch(err => {
+                console.error("Itinerary generation failed:", err);
+                alert("Itinerary generation failed. Verify backend services.");
+            })
+            .finally(() => {
+                genBtn.disabled = false;
+                genBtn.innerHTML = "Generate Travel Itinerary 🚀";
+            });
+        }
+    </script>
+
+    <!-- =======================================================================
+         STAGE 4: FLOATING TECHNICAL SUPPORT CHAT WIDGET
+         ====================================================================== -->
+    <!-- Launcher Button -->
+    <button class="support-launcher" id="support-launcher" onclick="toggleSupportWidget()" aria-label="Open Site Support">
+        <span style="font-size: 1.4rem;">🔧</span>
+    </button>
+
+    <!-- Support Chat Window Card -->
+    <div class="support-widget" id="support-widget" style="display: none;">
+        <div class="support-header">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 1.2rem;">🔧</span>
+                <div>
+                    <div style="font-weight: 700; font-size: 0.95rem; color: white;">Site Support Bot</div>
+                    <div style="font-size: 0.75rem; color: rgba(255,255,255,0.85); display: flex; align-items: center; gap: 4px;">
+                        <span style="width: 6px; height: 6px; background-color: #2ECC71; border-radius: 50%; display: inline-block;"></span> Active Technical Guide
+                    </div>
+                </div>
+            </div>
+            <button class="support-close-btn" onclick="toggleSupportWidget()">×</button>
+        </div>
+        
+        <div class="support-body" id="support-chat-body">
+            <!-- Warm Welcome Message -->
+            <div class="support-msg system">
+                Hello! I am your Technical Site Support Assistant. I can help resolve any issues with models, translation, PDF exports, vector DB rebuilds, or speech synthesis. Ask me anything about using this dashboard!
+            </div>
+        </div>
+        
+        <form class="support-footer" onsubmit="handleSupportSubmit(event)">
+            <input type="text" class="support-input" id="support-input" placeholder="Type technical problem...">
+            <button type="submit" class="support-send-btn">Send</button>
+        </form>
+    </div>
+
+    <script>
+        // Toggle support widget visibility
+        function toggleSupportWidget() {
+            const widget = document.getElementById("support-widget");
+            if (widget.style.display === "none") {
+                widget.style.display = "flex";
+                document.getElementById("support-input").focus();
+            } else {
+                widget.style.display = "none";
+            }
+        }
+
+        // Process support chat query locally
+        function handleSupportSubmit(event) {
+            event.preventDefault();
+            const inputField = document.getElementById("support-input");
+            const query = inputField.value.trim();
+            if (!query) return;
+
+            // Clear input
+            inputField.value = "";
+
+            const chatBody = document.getElementById("support-chat-body");
+            // Append User Question bubble
+            chatBody.innerHTML += `<div class="support-msg user">${query}</div>`;
+            chatBody.scrollTop = chatBody.scrollHeight;
+
+            // Process response with dynamic local rules engine
+            let reply = "";
+            const normQuery = query.toLowerCase();
+
+            if (normQuery.includes("freeze") || normQuery.includes("froze") || normQuery.includes("stuck") || normQuery.includes("slow") || normQuery.includes("not responding") || normQuery.includes("delay")) {
+                reply = "<strong>Troubleshooting Site Freezes & Slowness</strong>:<br>" +
+                        "• <strong>Reload Browser</strong>: If the application screen becomes unresponsive, press <code>F5</code> or <code>Ctrl+R</code> to refresh the browser tab.<br>" +
+                        "• <strong>Knowledge Rebuilding In-Progress</strong>: If you recently started the <em>Index & Rebuild Vector DB</em> tool, the page will pause for 30-60 seconds while new data is processed and indexed. Other actions will resume as soon as the rebuild completes.<br>" +
+                        "• <strong>Network Latency</strong>: If a chatbot query is taking longer than usual, the system is waiting for the cloud AI service response. Please check your internet connection or try sending a shorter query.";
+            } else if (normQuery.includes("connect") || normQuery.includes("offline") || normQuery.includes("pending") || normQuery.includes("status")) {
+                reply = "<strong>Connection Diagnostics Guide</strong>:<br>" +
+                        "• <strong>Check Internet Access</strong>: Verify that your device is connected to the internet, as the AI requires active connectivity to reach translation and cloud generation endpoints.<br>" +
+                        "• <strong>Check Status Indicators</strong>: Look at the status indicators in the **About** configuration tab. If it reads <code>🔴 OFFLINE</code>, check your network connection or verify that the correct settings are enabled.";
+            } else if (normQuery.includes("itinerary") || normQuery.includes("travel plan") || normQuery.includes("schedule")) {
+                reply = "<strong>Custom Itinerary Planner Guide</strong>:<br>" +
+                        "1. Select the <strong>Custom Itinerary</strong> tab in the sidebar.<br>" +
+                        "2. Choose your hub destination (or type a custom one), duration in days, and travel pace.<br>" +
+                        "3. Click the golden <strong>Generate Travel Itinerary</strong> button to render your custom day-by-day travel plan.";
+            } else if (normQuery.includes("pdf") || normQuery.includes("download") || normQuery.includes("export")) {
+                reply = "<strong>PDF Export Feature</strong>:<br>" +
+                        "The PDF download option has been removed from this version of the travel agent dashboard per customer requirements. You can still generate and view custom day-by-day plans directly on the screen.";
+            } else if (normQuery.includes("model") || normQuery.includes("phi3") || normQuery.includes("groq") || normQuery.includes("404")) {
+                reply = "<strong>Active LLM Model & 404 Guide</strong>:<br>" +
+                        "1. If you encounter a Groq API 404, verify that the active model in the configuration card is a valid model (like <code>llama-3.1-8b-instant</code>).<br>" +
+                        "2. We have removed the legacy <code>phi3</code> fallback reference to prevent this issue from occurring again.";
+            } else if (normQuery.includes("voice") || normQuery.includes("tts") || normQuery.includes("audio") || normQuery.includes("speech") || normQuery.includes("read")) {
+                reply = "<strong>Voice Synthesis & TTS Guide</strong>:<br>" +
+                        "Our Read Aloud feature utilizes Google Text-to-Speech (gTTS). Since the system dynamically generates the audio streams, it <strong>requires an active internet connection</strong> to play the voice synthesis successfully.";
+            } else if (normQuery.includes("rebuild") || normQuery.includes("sync") || normQuery.includes("index") || normQuery.includes("vector") || normQuery.includes("scrape")) {
+                reply = "<strong>Knowledge Database Rebuilder</strong>:<br>" +
+                        "To scrape the latest official sources and rebuild your vector chunks, navigate to the **About** tab in the sidebar and click the **Index & Rebuild Vector DB** gold button in the configuration panel.";
+            } else if (normQuery.includes("language") || normQuery.includes("translate") || normQuery.includes("odia") || normQuery.includes("hindi")) {
+                reply = "<strong>To translate the chatbot's answers</strong>:<br>" +
+                        "Our pipeline fully supports real-time translation into multiple languages (including <em>ଓଡ଼ିଆ (Odia)</em> and <em>Hindi</em>). Simply select your language using the drop-down selector inside the **About** tab configuration panel before typing your query.";
+            } else {
+                reply = "I am here to solve any website or dashboard technical issues! Please ask me about:<br>" +
+                        "• <strong>Connection or Offline Status</strong><br>" +
+                        "• <strong>How to generate custom itineraries</strong><br>" +
+                        "• <strong>Troubleshooting gTTS read-aloud voice</strong><br>" +
+                        "• <strong>Updating & indexing the vector database</strong><br>" +
+                        "• <strong>Changing models or interface languages</strong>";
+            }
+
+            // Simulate slight thinking delay
+            setTimeout(() => {
+                chatBody.innerHTML += `<div class="support-msg system">${reply}</div>`;
+                chatBody.scrollTop = chatBody.scrollHeight;
+            }, 300);
+        }
+    </script>
+
+</body>
+</html>
