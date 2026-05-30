@@ -408,13 +408,22 @@ CONTEXT:
 You are a master travel planner specializing in Odisha Tourism. 
 Your goal is to generate highly accurate, realistic, day-by-day travel itineraries in Odisha.
 
-CRITICAL GEOGRAPHICAL RULES:
+CRITICAL GEOGRAPHICAL AND CULINARY RULES:
 1. NEVER place tourist attractions, temples, or landmarks from other cities inside {location}'s schedule if they do not physically belong there. 
    - For example, if generating an itinerary for Dhenkanal, you must ONLY include real Dhenkanal attractions (such as Kapilash Temple, Saptasajya Hills, Joranda Gadi temple, Dhenkanal Palace, Kapilash Deer Park, etc.). 
    - You must NEVER include attractions from Bhubaneswar (like Nandankanan Zoo, Khandagiri and Khandagiri Caves, Dhauli Peace Pagoda, Sisupalgarh, Bindusagar Lake, Kapileswar Temple), Puri (like Jagannath Temple, Puri Beach, Raghurajpur), Konark, Chilika Lake, or Cuttack (like Barabati Fort). Placing these in other districts (like Nayagarh) is an extreme hallucination and is strictly forbidden!
 2. Local Knowledge Fallback: If there is no specific database context for {location}, you must draw exclusively from your pre-trained general knowledge of Odisha's geography and districts to supply authentic local attractions of {location}.
    - For example, real attractions in Nayagarh district include Nilamadhaba Temple (Kantilo), Tarabalo Hot Spring, Dutikeswar Temple, Gokulananda Temple, and Nayagarh Palace. Bindusagar Lake and Kapileswar/Kapilash Temple are NOT in Nayagarh and must NEVER be listed there!
-3. Geographically Realistic Routes: Keep all commuting tips, regional national highways, and lunch recommendations (local Odia delicacies like Dalma, Dahibara Aloodum, Chhena Poda, or specific regional specialties) highly accurate and realistic.
+3. Geographically Realistic Routes & Local Culinary Specialties: Keep all commuting tips, regional national highways, and lunch/sweet recommendations highly accurate, realistic, and native to the target {location}/district. Do NOT default to suggesting generic "Dalma" everywhere. If there are famous native specialties, prioritize them:
+   - For Western Odisha (Sambalpur, Debrigarh, Deogarh, etc.): Recommend Chaul Bara (rice dumplings), Sarsatia (traditional sweet), local Badi Chura, Kardi Bhaja (bamboo shoot), and Handua.
+   - For Nayagarh: Recommend the legendary GI-tagged Chhena Poda and Pala Kiri.
+   - For Cuttack: Recommend iconic Cuttack Dahibara Aloodum and Thunka Puri.
+   - For Kendrapara: Recommend the GI-tagged Kendrapara Rasabali.
+   - For Nimapada / Puri area: Recommend Nimapada Chhena Jhili, Jagannath Temple Mahaprasad, and Puri Khaja.
+   - For coastal / Chilika Lake area: Recommend fresh local seafood delicacies like Chungudi Malai Jhola (Prawn Curry) or Kankada Jhola (Crab Curry) sourced from Chilika.
+   - For Mayurbhanj / Baripada: Recommend the famous Mudhi Mansa (puffed rice with mutton gravy).
+   - For Keonjhar: Recommend the unique Keonjhar Badi (lentil dumplings).
+   - For Ganjam / Berhampur: Recommend Berhampuri Achara (pickles) and Papad.
 4. Format the output professionally with the required headers, bullet points, and travel tips.
 """
 
@@ -428,6 +437,7 @@ Source Context to draw from (if any):
 Remember:
 - Verify that EVERY single attraction listed in the itinerary is physically located within or immediately adjacent to {location}.
 - Under no circumstances should Nandankanan Zoo, Lingaraj Temple, Dhauli, Bindusagar Lake, Kapileswar Temple, Kapilash Temple, Puri Beach, Konark Sun Temple, Barabati Fort, or Chilika Lake appear in a {location} itinerary (like Dhenkanal, Deogarh, or Nayagarh) unless {location} is exactly Bhubaneswar, Puri, Konark, or Chilika.
+- Prioritize and integrate local delicacies native to the {location}/district as lunch or snack suggestions (e.g. Chhena Poda for Nayagarh, Dahibara Aloodum for Cuttack, Chaul Bara or Sarsatia for Sambalpur/Western Odisha, Mudhi Mansa for Mayurbhanj, Rasabali for Kendrapara). Avoid defaulting to generic "Dalma" if the area is famous for a unique native specialty.
 
 Format the itinerary professionally with this structure:
 # {duration_days}-Day Custom Travel Itinerary: {location}
@@ -440,7 +450,7 @@ Provide a brief, geographically accurate introduction to {location} and key high
 For each day:
 ### Day X: [Theme of the day]
 - **Morning (8:00 AM - 12:00 PM)**: Visit attraction, details, typical timings, historical background.
-- **Lunch suggestion (12:30 PM - 2:00 PM)**: Introduce an authentic local Odia delicacy to try (e.g. Dalma, Dahibara Aloodum, Chhena Poda, or specific regional foods).
+- **Lunch / Culinary suggestion (12:30 PM - 2:00 PM)**: Introduce an authentic local delicacy native to that specific area or district (e.g. Cuttack Dahibara Aloodum for Cuttack, Chhena Poda or Pala Kiri for Nayagarh, Chaul Bara for Sambalpur, Mudhi Mansa for Mayurbhanj, fresh seafood for Chilika/Puri, or temple Mahaprasad).
 - **Afternoon (2:30 PM - 5:30 PM)**: Relax or visit subsequent attractions.
 - **Evening (6:00 PM - 8:30 PM)**: Local markets, scenic viewpoints, or cultural events.
 
@@ -499,7 +509,7 @@ Embark on a spiritual, historical, and scenic tour of Puri and Konark, the crown
 
 ### Day 2: Architectural Majesty of Konark
 - **Morning (8:30 AM - 12:30 PM)**: Drive along the scenic **Puri-Konark Marine Drive** highway (35 km) to the **Konark Sun Temple**. Rent an ASI guide to explore the 24 sundial wheels and 7 stone horses.
-- **Lunch suggestion (1:00 PM - 2:30 PM)**: Stop by a local restaurant on the Marine Drive to try authentic **Dalma** with steamed rice.
+- **Lunch suggestion (1:00 PM - 2:30 PM)**: Stop by a local restaurant on the Marine Drive to try fresh coastal delicacies like **Chungudi Malai Jhola** (Prawn Curry in coconut milk) or pan-fried Pomfret fish curry.
 - **Afternoon (3:00 PM - 5:30 PM)**: Visit the pristine, quiet Chandrabhaga Beach (3 km from Konark) for sand-art displays and calm waters.
 - **Evening (6:30 PM - 8:00 PM)**: Watch the spellbinding Light and Sound Show at the Sun Temple.
 
