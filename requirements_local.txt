@@ -1,0 +1,3 @@
+# Additional heavy dependencies for running offline BGE models locally on your PC
+langchain-huggingface>=0.0.1
+sentence-transformers>=2.6.1
