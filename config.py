@@ -9,9 +9,10 @@ VECTOR_DB_DIR = os.path.join(BASE_DIR, "vectordb")
 MODELS_DIR = os.path.join(BASE_DIR, "models")
 UTILS_DIR = os.path.join(BASE_DIR, "utils")
 
-# Create folders if they do not exist
-for folder in [DATA_DIR, RAW_DATA_DIR, PROCESSED_DATA_DIR, VECTOR_DB_DIR, MODELS_DIR, UTILS_DIR]:
-    os.makedirs(folder, exist_ok=True)
+# Create folders if they do not exist (only if not running on Vercel to avoid read-only filesystem crash)
+if not os.environ.get("VERCEL"):
+    for folder in [DATA_DIR, RAW_DATA_DIR, PROCESSED_DATA_DIR, VECTOR_DB_DIR, MODELS_DIR, UTILS_DIR]:
+        os.makedirs(folder, exist_ok=True)
 
 # --- SCRAPER CONFIGURATION ---
 # Reliable target URLs for scraping Odisha tourism info

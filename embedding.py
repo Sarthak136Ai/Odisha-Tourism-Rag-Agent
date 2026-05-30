@@ -58,7 +58,7 @@ def get_embeddings_model():
     Routes to zero-RAM Cloud API in production, and high-fidelity PyTorch offline model locally.
     """
     # Detect if we are running in the cloud
-    if os.environ.get("RENDER") or os.environ.get("PORT"):
+    if os.environ.get("RENDER") or os.environ.get("PORT") or os.environ.get("VERCEL"):
         logger.info("Cloud deployment detected! Activating ultra-lightweight HuggingFace Inference API embeddings (0MB RAM)...")
         return HuggingFaceInferenceEmbeddings()
 

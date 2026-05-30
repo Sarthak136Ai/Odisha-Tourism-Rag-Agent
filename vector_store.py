@@ -15,7 +15,26 @@ logger = logging.getLogger(__name__)
 class OdishaVectorStore:
     def __init__(self):
         self.embeddings = get_embeddings_model()
-        self.persist_directory = config.VECTOR_DB_DIR
+        
+        # Check if we are running in Vercel or general cloud serverless environment
+        is_cloud = os.environ.get("VERCEL") or os.environ.get("RENDER") or os.environ.get("PORT")
+        if is_cloud:
+            import shutil
+            tmp_db_dir = "/tmp/vectordb"
+            logger.info(f"Cloud deployment detected. Copying vector database from {config.VECTOR_DB_DIR} to {tmp_db_dir}...")
+            try:
+                # Copy existing pre-built DB to writable /tmp directory
+                if os.path.exists(config.VECTOR_DB_DIR):
+                    shutil.copytree(config.VECTOR_DB_DIR, tmp_db_dir, dirs_exist_ok=True)
+                    logger.info("Successfully copied vector database to /tmp/vectordb.")
+                else:
+                    logger.warning(f"Source vector database directory {config.VECTOR_DB_DIR} does not exist!")
+            except Exception as e:
+                logger.error(f"Failed to copy vector database to /tmp: {e}")
+            self.persist_directory = tmp_db_dir
+        else:
+            self.persist_directory = config.VECTOR_DB_DIR
+
         self.db = None
         self.initialize_db()
 

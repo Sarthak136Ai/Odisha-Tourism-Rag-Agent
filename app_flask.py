@@ -23,17 +23,20 @@ scraper = OdishaTourismScraper()
 vector_store = OdishaVectorStore()
 rag_pipeline = OdishaRAGPipeline()
 
-# Bootstrap database if empty on startup
-try:
-    existing = vector_store.db.get()
-    if not existing or len(existing.get("documents", [])) == 0:
-        logger.info("Vector database is empty. Running initial bootstrapping on startup...")
+# Bootstrap database if empty on startup (disabled on Vercel to prevent illegal writes and startup timeouts)
+if not os.environ.get("VERCEL"):
+    try:
+        existing = vector_store.db.get()
+        if not existing or len(existing.get("documents", [])) == 0:
+            logger.info("Vector database is empty. Running initial bootstrapping on startup...")
+            scraper.run_all_acquisition()
+            vector_store.build_database()
+    except Exception as e:
+        logger.warning(f"Error checking DB size on startup: {e}. Running bootstrapping...")
         scraper.run_all_acquisition()
         vector_store.build_database()
-except Exception as e:
-    logger.warning(f"Error checking DB size on startup: {e}. Running bootstrapping...")
-    scraper.run_all_acquisition()
-    vector_store.build_database()
+else:
+    logger.info("Vercel environment detected. Skipping startup database bootstrapping and checks.")
 
 
 @app.route("/", methods=["GET"])
