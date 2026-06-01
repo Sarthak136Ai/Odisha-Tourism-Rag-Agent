@@ -47,6 +47,16 @@ GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions"
 DEFAULT_LLM_MODEL = "llama-3.1-8b-instant"
 SUPPORTED_LLM_MODELS = ["llama-3.1-8b-instant", "llama-3.3-70b-versatile"]
 
+# Read GEMINI key securely from environment variables, or import from untracked local_config
+GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "")
+if not GEMINI_API_KEY:
+    try:
+        import local_config
+        GEMINI_API_KEY = getattr(local_config, "GEMINI_API_KEY", "")
+    except ImportError:
+        pass
+
+
 
 # --- UI & BRANDING ---
 # Theme colors: Warm Golden Terracotta theme for Odisha Tourism

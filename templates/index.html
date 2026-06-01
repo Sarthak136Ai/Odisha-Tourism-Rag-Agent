@@ -12,12 +12,21 @@
     <style>
         :root {
             --primary: #D4AF37;       /* Marigold Gold */
+            --primary-glow: rgba(212, 175, 55, 0.25);
             --secondary: #E07A5F;     /* Terracotta Orange */
-            --bg: #F8F7F2;            /* Cream Sand Canvas */
-            --card-bg: #FFFFFF;
-            --text: #3D405B;          /* Deep Charcoal */
+            --secondary-glow: rgba(224, 122, 95, 0.25);
+            --bg: #0B0D13;            /* Deep Space Dark / Midnight Navy-Black */
+            --bg-gradient: linear-gradient(135deg, #090B10 0%, #151821 100%);
+            --card-bg: rgba(26, 29, 41, 0.65); /* Elegant Frosted Glass */
+            --card-bg-hover: rgba(36, 40, 56, 0.85);
+            --card-bg-solid: #151821;
+            --text: #F3F4F6;          /* Creamy White for high contrast readability */
+            --text-muted: #9CA3AF;    /* Soft Gray */
             --accent: #81B29A;        /* Soft Olive Green */
-            --sidebar-bg: #2D3142;    /* Dark Charcoal for Sidebar */
+            --accent-glow: rgba(129, 178, 154, 0.25);
+            --sidebar-bg: rgba(15, 18, 26, 0.95); /* Deep frosted glass sidebar */
+            --border-color: rgba(255, 255, 255, 0.08);
+            --border-glow: rgba(212, 175, 55, 0.15);
             --font-main: 'Outfit', sans-serif;
             --font-hdr: 'Playfair Display', serif;
         }
@@ -29,7 +38,7 @@
         }
 
         body {
-            background-color: var(--bg);
+            background: var(--bg-gradient);
             color: var(--text);
             font-family: var(--font-main);
             display: flex;
@@ -40,13 +49,16 @@
         /* --- LAYOUT SPLIT --- */
         .sidebar {
             width: 320px;
-            background-color: var(--sidebar-bg);
+            background: var(--sidebar-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
             color: white;
-            padding: 2rem 1.5rem;
+            padding: 2.5rem 1.5rem;
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
-            box-shadow: 4px 0 24px rgba(0, 0, 0, 0.15);
+            box-shadow: 4px 0 30px rgba(0, 0, 0, 0.45);
+            border-right: 1px solid var(--border-color);
             position: fixed;
             top: 0;
             bottom: 0;
@@ -61,7 +73,7 @@
         .main-content {
             margin-left: 320px;
             flex: 1;
-            padding: 2.5rem;
+            padding: 3rem 2.5rem;
             max-width: 1400px;
             transition: margin-left 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
@@ -75,22 +87,22 @@
             left: 300px; /* Sits right on the border of the 320px sidebar */
             top: 25px;
             z-index: 110;
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #ff9f7f 100%);
             color: white;
-            border: 2px solid white;
+            border: 2px solid rgba(255, 255, 255, 0.2);
             border-radius: 50%;
             width: 36px;
             height: 36px;
             cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            box-shadow: 0 4px 15px var(--secondary-glow);
             display: flex;
             align-items: center;
             justify-content: center;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .sidebar-toggle-btn:hover {
-            background-color: var(--primary);
             transform: scale(1.1);
+            box-shadow: 0 6px 20px rgba(224, 122, 95, 0.5);
         }
         .sidebar-toggle-btn.collapsed {
             left: 15px;
@@ -123,24 +135,32 @@
         }
         .sidebar-title {
             font-family: var(--font-hdr);
-            font-size: 1.4rem;
+            font-size: 1.6rem;
             color: var(--primary);
-            letter-spacing: 0.5px;
+            letter-spacing: 1px;
+            font-weight: 700;
+            text-transform: uppercase;
+            background: linear-gradient(135deg, var(--primary) 0%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.3));
         }
         .sidebar-divider {
             border: 0;
-            border-top: 1px solid rgba(255, 255, 255, 0.1);
+            border-top: 1px solid var(--border-color);
             margin: 0.5rem 0;
         }
+        
         .diagnostic-card {
-            background: rgba(255, 255, 255, 0.05);
-            border-radius: 8px;
-            padding: 1rem;
+            background: rgba(0, 0, 0, 0.2) !important;
+            border-radius: 12px;
+            padding: 1.25rem;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            font-size: 0.9rem;
-            border-left: 3px solid var(--accent);
+            gap: 0.85rem;
+            font-size: 0.92rem;
+            border: 1px solid var(--border-color) !important;
+            border-left: 4px solid var(--accent) !important;
         }
         .diagnostic-row {
             display: flex;
@@ -149,84 +169,102 @@
         }
         .badge {
             background-color: var(--accent);
-            color: white;
-            padding: 0.15rem 0.5rem;
+            color: #0b0d13;
+            padding: 0.25rem 0.75rem;
             border-radius: 20px;
             font-size: 0.75rem;
             font-weight: bold;
+            box-shadow: 0 2px 8px var(--accent-glow);
         }
         .badge.offline {
-            background-color: #E07A5F;
+            background-color: var(--secondary);
+            color: white;
+            box-shadow: 0 2px 8px var(--secondary-glow);
         }
         
         .reindex-warning {
-            background-color: #FFF3CD;
-            border-left: 5px solid #FFC107;
-            padding: 0.75rem;
+            background-color: rgba(255, 193, 7, 0.08) !important;
+            border: 1px solid rgba(255, 193, 7, 0.2) !important;
+            border-left: 5px solid #FFC107 !important;
+            padding: 1rem;
             border-radius: 8px;
-            color: #856404;
-            font-size: 0.85rem;
+            color: #ffe082 !important;
+            font-size: 0.9rem;
             font-weight: 500;
             margin-top: 0.5rem;
-            line-height: 1.4;
+            line-height: 1.5;
         }
 
         /* --- CORE ELEMENTS --- */
         .banner-container {
-            background-image: linear-gradient(rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0.45)), url('/static/odisha_banner_panoramic_color_warm.jpg');
+            background-image: linear-gradient(rgba(220, 220, 220, 0.4), rgba(220, 220, 220, 0.4)), url('/static/odisha_banner_panoramic_color_warm.jpg');
             background-size: 100% 100%; /* Stretches to completely fit the container box */
             background-position: center;
             background-repeat: no-repeat;
-            padding: 3rem 2.5rem;
+            padding: 4rem 2.5rem;
             border-radius: 16px;
-            color: #000000; /* Black color for text */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 2.5rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25);
+            border: 1px solid var(--border-color);
+            position: relative;
+            overflow: hidden;
+            min-height: 250px;
+            gap: 0.75rem;
             text-align: center;
-            margin-bottom: 2rem;
-            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.05);
         }
         .banner-title {
             font-family: var(--font-hdr);
-            font-size: 2.8rem;
+            font-size: 3.2rem;
             font-weight: 700;
-            margin-bottom: 0.5rem;
-            letter-spacing: 1px;
-            text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.8);
+            letter-spacing: 1.5px;
+            color: #C59B27; /* Deep Premium Dark Yellow */
+            text-shadow: 0px 4px 15px rgba(0, 0, 0, 0.95), 
+                         0px 2px 4px rgba(0, 0, 0, 0.95);
+            display: inline-block;
         }
         .banner-subtitle {
-            font-size: 1.15rem;
+            font-size: 1.25rem;
             font-weight: 600; /* Bold for high-contrast visibility */
+            color: #FFFFFF; /* Pure White */
             opacity: 1.0;
+            text-shadow: 0px 3px 10px rgba(0, 0, 0, 0.95), 
+                         0px 1px 3px rgba(0, 0, 0, 0.95);
         }
 
         /* --- TABS BAR --- */
         .tabs-header {
             display: flex;
             gap: 12px;
-            border-bottom: 2px solid #E2E2D9;
-            margin-bottom: 1.5rem;
-            padding-bottom: 0.5rem;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 2rem;
+            padding-bottom: 0.75rem;
         }
         .tab-btn {
             background: none;
             border: none;
-            color: var(--text);
+            color: var(--text-muted);
             font-family: var(--font-main);
             font-weight: 600;
             font-size: 1.05rem;
-            padding: 0.5rem 1.2rem;
+            padding: 0.6rem 1.4rem;
             cursor: pointer;
             border-radius: 8px;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             opacity: 0.8;
         }
         .tab-btn:hover {
-            color: var(--secondary);
-            background: rgba(224, 122, 95, 0.05);
+            color: var(--text);
+            background: rgba(255, 255, 255, 0.05);
             opacity: 1;
         }
         .tab-btn.active {
             color: var(--secondary);
             background: rgba(224, 122, 95, 0.1);
+            border: 1px solid rgba(224, 122, 95, 0.25);
             opacity: 1;
         }
         .tab-content {
@@ -239,41 +277,51 @@
         /* --- CHAT SECTION --- */
         .chat-layout {
             display: grid;
-            grid-template-columns: 5fr 3fr;
+            grid-template-columns: 1fr;
             gap: 2rem;
         }
 
         .chat-pane {
-            background: white;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
-            gap: 1.25rem;
+            gap: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .chat-pane:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
         }
 
         .chips-container {
             display: flex;
             flex-wrap: wrap;
-            gap: 8px;
+            gap: 10px;
             margin-bottom: 0.5rem;
         }
         .suggestion-chip {
-            background-color: white;
+            background: rgba(224, 122, 95, 0.08);
             color: var(--text);
-            border: 1px solid var(--secondary);
+            border: 1px solid rgba(224, 122, 95, 0.3);
             border-radius: 20px;
-            padding: 0.4rem 1rem;
-            font-size: 0.85rem;
+            padding: 0.5rem 1.2rem;
+            font-size: 0.88rem;
             font-weight: 500;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .suggestion-chip:hover {
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #ff9f7f 100%);
             color: white;
-            box-shadow: 0 4px 12px rgba(224, 122, 95, 0.2);
+            border-color: transparent;
+            box-shadow: 0 4px 15px var(--secondary-glow);
+            transform: translateY(-2px);
         }
 
         /* STRICTLY ISOLATED SCROLL MESSAGES AREA */
@@ -282,50 +330,65 @@
             overflow-y: scroll;
             padding-right: 15px;
             margin-right: 5px;
-            border-right: 1px solid rgba(224, 122, 95, 0.15);
+            border-right: 1px solid rgba(255, 255, 255, 0.06);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
         }
         
         /* Custom scrollbar rules scoped ONLY to the chat log block */
         .chat-scroll-container::-webkit-scrollbar {
-            width: 10px;
-            height: 10px;
+            width: 8px;
+            height: 8px;
             display: block;
         }
         .chat-scroll-container::-webkit-scrollbar-track {
-            background: #F4F1DE;
+            background: rgba(0, 0, 0, 0.2);
             border-radius: 6px;
-            box-shadow: inset 0 0 6px rgba(0,0,0,0.05);
         }
         .chat-scroll-container::-webkit-scrollbar-thumb {
-            background-color: var(--secondary);
+            background-color: rgba(224, 122, 95, 0.3);
             border-radius: 6px;
-            border: 2px solid #F4F1DE;
+            transition: background-color 0.2s;
         }
         .chat-scroll-container::-webkit-scrollbar-thumb:hover {
-            background-color: var(--primary);
+            background-color: var(--secondary);
         }
 
         /* Conversational Bubbles */
         .chat-bubble {
-            padding: 1rem 1.25rem;
-            border-radius: 12px;
-            line-height: 1.5;
-            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.03);
-            max-width: 90%;
+            padding: 1.2rem 1.5rem;
+            border-radius: 16px;
+            line-height: 1.6;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            max-width: 85%;
             word-wrap: break-word;
+            position: relative;
+            transition: all 0.3s ease;
         }
         .chat-bubble.user {
-            background-color: #FFFFFF;
+            background: rgba(129, 178, 154, 0.08);
+            border: 1px solid rgba(129, 178, 154, 0.2);
             border-left: 5px solid var(--accent);
             align-self: flex-end;
+            border-bottom-right-radius: 4px;
+            color: var(--text);
+        }
+        .chat-bubble.user:hover {
+            border-color: var(--accent);
+            box-shadow: 0 4px 20px rgba(129, 178, 154, 0.15);
         }
         .chat-bubble.assistant {
-            background-color: #F4F1DE;
+            background: rgba(224, 122, 95, 0.06);
+            border: 1px solid rgba(224, 122, 95, 0.25);
             border-left: 5px solid var(--secondary);
             align-self: flex-start;
+            border-bottom-left-radius: 4px;
+            color: var(--text);
+        }
+        .chat-bubble.assistant:hover {
+            border-color: var(--secondary);
+            box-shadow: 0 4px 20px rgba(224, 122, 95, 0.15);
         }
         .bubble-header {
             font-size: 0.8rem;
@@ -340,20 +403,62 @@
         .latency-stamp {
             font-size: 0.75rem;
             font-style: italic;
-            opacity: 0.8;
+            color: var(--text-muted);
             margin-top: 0.5rem;
             display: block;
         }
 
+        .know-more-link {
+            font-size: 0.8rem;
+            font-weight: 600;
+            color: var(--secondary);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            margin-top: 0.4rem;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            border-bottom: 1px dashed var(--secondary);
+        }
+        .know-more-link:hover {
+            color: var(--primary);
+            border-bottom-color: var(--primary);
+            transform: translateY(-1px);
+        }
+
+        .highlight-pulse {
+            animation: pulse-highlight 2s ease-in-out;
+        }
+        @keyframes pulse-highlight {
+            0% {
+                box-shadow: 0 0 0 0 rgba(224, 122, 95, 0.7);
+                border-color: var(--secondary);
+            }
+            70% {
+                box-shadow: 0 0 0 15px rgba(224, 122, 95, 0);
+                border-color: var(--secondary);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(224, 122, 95, 0);
+            }
+        }
+
         /* Chat Form Elements */
         .chat-input-form {
-            background: #FFFFFF;
-            border: 1px solid #E2E2D9;
-            border-radius: 12px;
-            padding: 0.5rem;
+            background: rgba(26, 29, 41, 0.8);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 0.6rem;
             display: flex;
-            gap: 8px;
+            gap: 10px;
             align-items: center;
+            transition: all 0.3s ease;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);
+        }
+        .chat-input-form:focus-within {
+            border-color: var(--secondary);
+            box-shadow: 0 0 15px var(--secondary-glow);
         }
         .chat-input-field {
             flex: 1;
@@ -367,33 +472,40 @@
         .chat-input-field:focus {
             outline: none;
         }
+        .chat-input-field::placeholder {
+            color: var(--text-muted);
+            opacity: 0.7;
+        }
 
         /* --- BUTTONS SYSTEM --- */
         .btn {
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #ff9f7f 100%);
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 0.75rem 1.5rem;
+            padding: 0.8rem 1.6rem;
             font-family: var(--font-main);
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 0.98rem;
             cursor: pointer;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             display: inline-flex;
             align-items: center;
             gap: 8px;
             justify-content: center;
+            box-shadow: 0 4px 15px var(--secondary-glow);
         }
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 4px 12px rgba(224, 122, 95, 0.3);
+            box-shadow: 0 6px 20px rgba(224, 122, 95, 0.4);
         }
         .btn-gold {
-            background-color: var(--primary);
+            background: linear-gradient(135deg, var(--primary) 0%, #ffd700 100%);
+            box-shadow: 0 4px 15px var(--primary-glow);
+            color: #0b0d13;
         }
         .btn-gold:hover {
-            box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+            box-shadow: 0 6px 20px rgba(212, 175, 55, 0.45);
         }
         .btn-sidebar {
             width: 100%;
@@ -403,62 +515,73 @@
 
         /* --- CITATIONS DRAWER (RIGHT PANEL) --- */
         .citations-panel {
-            background: white;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.25rem;
             max-height: 580px;
             overflow-y: auto;
         }
         .citation-card {
-            background-color: white;
+            background-color: rgba(255, 255, 255, 0.02);
             padding: 1.25rem;
             border-radius: 12px;
-            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+            box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--border-color);
             border-top: 4px solid var(--primary);
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .citation-card:hover {
-            transform: translateY(-2px);
+            transform: translateY(-3px);
+            border-color: rgba(212, 175, 55, 0.3);
             box-shadow: 0 6px 20px rgba(212, 175, 55, 0.15);
+            background-color: rgba(255, 255, 255, 0.04);
         }
         .citation-source {
             font-weight: 600;
-            color: var(--secondary);
-            font-size: 0.9rem;
+            color: var(--primary);
+            font-size: 0.95rem;
+            margin-bottom: 0.25rem;
         }
         .citation-meta {
-            font-size: 0.75rem;
-            color: #777;
-            margin-bottom: 0.5rem;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            margin-bottom: 0.75rem;
         }
         .citation-divider {
             border: 0;
-            border-top: 1px solid #eee;
-            margin: 0.5rem 0;
+            border-top: 1px solid var(--border-color);
+            margin: 0.75rem 0;
         }
         .citation-body {
-            font-size: 0.88rem;
-            line-height: 1.4;
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: var(--text);
+            font-style: italic;
         }
         
         .notification-card {
-            background-color: #E8F0FE;
+            background-color: rgba(26, 115, 232, 0.1);
+            border: 1px solid rgba(26, 115, 232, 0.2);
             border-left: 5px solid #1A73E8;
-            padding: 1rem;
-            border-radius: 8px;
-            color: #1967D2;
-            font-weight: 600;
+            padding: 1.2rem;
+            border-radius: 10px;
+            color: #8ab4f8;
+            font-weight: 500;
             font-size: 0.95rem;
-            line-height: 1.5;
+            line-height: 1.6;
         }
 
         /* --- AUDIO TOUR COMPONENT --- */
         .audio-container {
-            background: #F4F1DE;
+            background: rgba(224, 122, 95, 0.1);
+            border: 1px solid rgba(224, 122, 95, 0.25);
             border-radius: 12px;
             padding: 1rem;
             margin-top: 1.5rem;
@@ -466,7 +589,7 @@
             align-items: center;
             justify-content: space-between;
             gap: 1rem;
-            box-shadow: inset 0 2px 8px rgba(0,0,0,0.03);
+            box-shadow: inset 0 2px 8px rgba(0,0,0,0.2);
         }
         .audio-info {
             display: flex;
@@ -488,55 +611,75 @@
             gap: 2rem;
         }
         .wiki-col {
-            background: white;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
-            padding: 1.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            padding: 2rem;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
-            gap: 1rem;
+            gap: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .wiki-col:hover {
+            border-color: rgba(255, 255, 255, 0.12);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.3);
         }
         .wiki-hdr {
             font-family: var(--font-hdr);
-            font-size: 1.5rem;
+            font-size: 1.6rem;
             color: var(--secondary);
             border-bottom: 2px solid var(--primary);
-            padding-bottom: 0.4rem;
+            padding-bottom: 0.5rem;
             margin-bottom: 0.5rem;
         }
         .accordion-item {
-            border: 1px solid #E2E2D9;
-            border-radius: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 10px;
             overflow: hidden;
+            margin-bottom: 0.75rem;
             transition: all 0.3s ease;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .accordion-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(255, 255, 255, 0.04);
         }
         .accordion-trigger {
-            background: #F8F7F2;
-            padding: 1rem;
+            background: none;
+            padding: 1.2rem;
             width: 100%;
             text-align: left;
             border: none;
             font-family: var(--font-main);
             font-weight: 600;
-            font-size: 0.95rem;
+            font-size: 1rem;
+            color: var(--text);
             cursor: pointer;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            transition: all 0.2s ease;
+        }
+        .accordion-trigger:hover {
+            color: var(--primary);
         }
         .accordion-content {
             padding: 0;
             max-height: 0;
             overflow: hidden;
-            background: white;
+            background: none;
             transition: all 0.3s cubic-bezier(0, 1, 0, 1);
-            font-size: 0.9rem;
-            line-height: 1.5;
+            font-size: 0.92rem;
+            line-height: 1.6;
+            color: var(--text-muted);
         }
         .accordion-item.active .accordion-content {
-            padding: 1rem;
+            padding: 0 1.2rem 1.2rem 1.2rem;
             max-height: 1000px;
-            border-top: 1px solid #E2E2D9;
+            border-top: 1px solid var(--border-color);
             transition: all 0.3s ease-out;
         }
 
@@ -547,22 +690,30 @@
             gap: 2rem;
         }
         .itinerary-form-card {
-            background: white;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 2rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             display: flex;
             flex-direction: column;
             gap: 1.5rem;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .itinerary-view-card {
-            background: white;
+            background: var(--card-bg);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
             border-radius: 16px;
             padding: 2.5rem;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.03);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
             max-height: 600px;
             overflow-y: auto;
             line-height: 1.6;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .form-group {
             display: flex;
@@ -576,21 +727,29 @@
         }
         .form-select, .form-input {
             width: 100%;
-            border: 1px solid #E2E2D9;
+            border: 1px solid var(--border-color);
             border-radius: 8px;
             padding: 0.75rem 1rem;
             font-family: var(--font-main);
             font-size: 0.95rem;
             color: var(--text);
-            background-color: white;
+            background-color: rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
         }
         .form-select:focus, .form-input:focus {
             outline: none;
             border-color: var(--secondary);
+            box-shadow: 0 0 10px var(--secondary-glow);
+            background-color: rgba(0, 0, 0, 0.3);
+        }
+        .form-select option {
+            background-color: #151821;
+            color: var(--text);
         }
         .itinerary-result-display {
             font-size: 0.98rem;
             white-space: pre-line;
+            color: var(--text);
         }
         .itinerary-result-display h1 {
             font-family: var(--font-hdr);
@@ -616,32 +775,36 @@
         .sidebar-nav-btn {
             background: none;
             border: none;
-            color: rgba(255, 255, 255, 0.7);
+            color: rgba(255, 255, 255, 0.65);
             font-family: var(--font-main);
             font-weight: 500;
-            font-size: 1.05rem;
-            padding: 0.8rem 1.2rem;
+            font-size: 1rem;
+            padding: 0.9rem 1.2rem;
             cursor: pointer;
-            border-radius: 8px;
-            transition: all 0.3s ease;
+            border-radius: 10px;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             text-align: left;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 12px;
             width: 100%;
+            border: 1px solid transparent;
         }
         .sidebar-nav-btn:hover {
             color: white;
-            background: rgba(255, 255, 255, 0.08);
+            background: rgba(255, 255, 255, 0.05);
+            border-color: rgba(255, 255, 255, 0.05);
             transform: translateX(4px);
         }
         .sidebar-nav-btn.active {
-            color: var(--primary);
-            background: rgba(255, 255, 255, 0.12);
+            color: white;
+            background: linear-gradient(135deg, rgba(224, 122, 95, 0.25) 0%, rgba(224, 122, 95, 0.05) 100%);
             font-weight: 600;
-            border-left: 4px solid var(--primary);
-            border-radius: 0 8px 8px 0;
+            border-left: 4px solid var(--secondary);
+            border-color: rgba(224, 122, 95, 0.3) rgba(224, 122, 95, 0.15) rgba(224, 122, 95, 0.15) var(--secondary);
+            border-radius: 4px 10px 10px 4px;
             padding-left: 0.95rem;
+            box-shadow: 0 4px 15px rgba(224, 122, 95, 0.1);
         }
 
         /* --- SPINNING UTILITIES --- */
@@ -666,36 +829,36 @@
             right: 25px;
             width: 56px;
             height: 56px;
-            background-color: var(--sidebar-bg);
-            border: 3px solid var(--primary);
+            background: linear-gradient(135deg, var(--sidebar-bg) 0%, #151821 100%);
+            border: 2px solid var(--primary);
             border-radius: 50%;
             cursor: pointer;
-            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5), 0 0 15px var(--primary-glow);
             display: flex;
             align-items: center;
             justify-content: center;
             z-index: 999;
-            transition: all 0.3s ease;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         .support-launcher:hover {
             transform: scale(1.1) rotate(15deg);
-            box-shadow: 0 8px 24px rgba(212, 175, 55, 0.4);
+            box-shadow: 0 12px 30px rgba(212, 175, 55, 0.4), 0 0 25px var(--primary-glow);
         }
         
         .support-widget {
             position: fixed;
             bottom: 95px;
             right: 25px;
-            width: 360px;
-            height: 480px;
-            background-color: white;
+            width: 380px;
+            height: 520px;
+            background-color: var(--card-bg-solid);
             border-radius: 16px;
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.6);
             display: flex;
             flex-direction: column;
             overflow: hidden;
             z-index: 999;
-            border: 1px solid #E2E2D9;
+            border: 1px solid var(--border-color);
             animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
         @keyframes slideUp {
@@ -704,13 +867,13 @@
         }
         
         .support-header {
-            background-color: var(--sidebar-bg);
+            background: linear-gradient(135deg, var(--sidebar-bg) 0%, #151821 100%);
             color: white;
-            padding: 0.85rem 1rem;
+            padding: 1rem 1.25rem;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            border-bottom: 3px solid var(--primary);
+            border-bottom: 2px solid var(--primary);
         }
         .support-close-btn {
             background: none;
@@ -727,74 +890,315 @@
         
         .support-body {
             flex: 1;
-            padding: 1rem;
+            padding: 1.25rem;
             overflow-y: auto;
             display: flex;
             flex-direction: column;
-            gap: 0.75rem;
-            background-color: #F8F7F2;
+            gap: 1rem;
+            background-color: rgba(11, 13, 19, 0.95);
         }
         
         .support-msg {
-            padding: 0.75rem 1rem;
-            border-radius: 12px;
+            padding: 0.85rem 1.1rem;
+            border-radius: 14px;
             max-width: 85%;
-            font-size: 0.88rem;
-            line-height: 1.4;
+            font-size: 0.9rem;
+            line-height: 1.5;
             word-wrap: break-word;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
         }
         .support-msg.system {
-            background-color: #FFFFFF;
+            background-color: rgba(255, 255, 255, 0.04);
             color: var(--text);
+            border: 1px solid var(--border-color);
             border-left: 4px solid var(--accent);
             align-self: flex-start;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.03);
+            border-bottom-left-radius: 4px;
         }
         .support-msg.user {
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #ff9f7f 100%);
             color: white;
             align-self: flex-end;
-            box-shadow: 0 2px 8px rgba(224, 122, 95, 0.15);
+            border-bottom-right-radius: 4px;
         }
         
         .support-footer {
-            padding: 0.75rem;
-            border-top: 1px solid #E2E2D9;
-            background-color: white;
+            padding: 1rem;
+            border-top: 1px solid var(--border-color);
+            background-color: var(--card-bg-solid);
             display: flex;
-            gap: 8px;
+            gap: 10px;
             margin: 0;
         }
         .support-input {
             flex: 1;
-            border: 1px solid #E2E2D9;
+            border: 1px solid var(--border-color);
+            background-color: rgba(0, 0, 0, 0.2);
+            color: var(--text);
             border-radius: 8px;
-            padding: 0.5rem 0.75rem;
+            padding: 0.6rem 1rem;
             font-family: var(--font-main);
-            font-size: 0.88rem;
+            font-size: 0.9rem;
+            transition: all 0.3s ease;
         }
         .support-input:focus {
             outline: none;
             border-color: var(--secondary);
+            background-color: rgba(0, 0, 0, 0.3);
         }
         .support-send-btn {
-            background-color: var(--secondary);
+            background: linear-gradient(135deg, var(--secondary) 0%, #ff9f7f 100%);
             color: white;
             border: none;
             border-radius: 8px;
-            padding: 0.5rem 1rem;
+            padding: 0.6rem 1.2rem;
             font-family: var(--font-main);
             font-weight: 600;
-            font-size: 0.88rem;
+            font-size: 0.9rem;
             cursor: pointer;
-            transition: background-color 0.2s;
+            transition: all 0.3s ease;
         }
         .support-send-btn:hover {
-            background-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 10px var(--secondary-glow);
+        }
+
+        /* --- PREMIUM LIGHT THEME OVERRIDES --- */
+        body.light-theme {
+            --bg: #F4F1EA;
+            --bg-gradient: linear-gradient(135deg, #FAF8F5 0%, #EAE5D9 100%);
+            --card-bg: rgba(255, 255, 255, 0.75);
+            --card-bg-hover: rgba(255, 255, 255, 0.9);
+            --card-bg-solid: #FFFFFF;
+            --text: #1A1D24;
+            --text-muted: #5C6470;
+            --accent: #2E6F40; /* Richer foliage green for legibility in light mode */
+            --accent-glow: rgba(46, 111, 64, 0.15);
+            --sidebar-bg: rgba(244, 241, 234, 0.95);
+            --border-color: rgba(0, 0, 0, 0.08);
+            --border-glow: rgba(224, 122, 95, 0.1);
+        }
+        
+        /* Floating premium Theme Toggle Button */
+        .theme-toggle {
+            background: var(--card-bg);
+            border: 1px solid var(--border-color);
+            color: var(--text);
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.15);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            font-size: 1.25rem;
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            position: fixed;
+            top: 25px;
+            right: 25px;
+            z-index: 105;
+        }
+        .theme-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            border-color: var(--secondary);
+            box-shadow: 0 6px 20px var(--secondary-glow);
+        }
+        
+        /* Interactive adaptivity tweaks */
+        body.light-theme .sidebar-nav-btn {
+            color: rgba(0, 0, 0, 0.6);
+        }
+        body.light-theme .sidebar-nav-btn:hover {
+            color: black;
+            background: rgba(0, 0, 0, 0.04);
+        }
+        body.light-theme .sidebar-nav-btn.active {
+            color: #E07A5F;
+            background: rgba(224, 122, 95, 0.08);
+        }
+        body.light-theme .suggestion-chip {
+            background: rgba(224, 122, 95, 0.05);
+            color: #1A1D24;
+        }
+        body.light-theme .suggestion-chip:hover {
+            color: white;
+        }
+        body.light-theme .chat-bubble.user {
+            background: #E0F2F1 !important;
+            border-color: rgba(0, 121, 107, 0.25) !important;
+            border-left: 5px solid #00796B !important;
+        }
+        body.light-theme .chat-bubble.user,
+        body.light-theme .chat-bubble.user div,
+        body.light-theme .chat-bubble.user p {
+            color: #004D40 !important;
+        }
+        body.light-theme .chat-bubble.assistant {
+            background: #E0F7FA !important;
+            border-color: rgba(0, 151, 167, 0.25) !important;
+            border-left: 5px solid #0097A7 !important;
+        }
+        body.light-theme .chat-bubble.assistant,
+        body.light-theme .chat-bubble.assistant div,
+        body.light-theme .chat-bubble.assistant p,
+        body.light-theme .chat-bubble.assistant li {
+            color: #006064 !important;
+        }
+        body.light-theme .bubble-header.user-hdr {
+            color: #00796B !important;
+        }
+        body.light-theme .bubble-header.assistant-hdr {
+            color: #0097A7 !important;
+        }
+        
+        /* Adaptive cards classes */
+        .wiki-col.adaptive-wiki-col {
+            background: var(--card-bg);
+            color: var(--text);
+            border-top-width: 4px;
+            border-top-style: solid;
+        }
+        body.light-theme .wiki-col.adaptive-wiki-col {
+            background: var(--card-bg-solid);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+        .adaptive-wiki-col h3 {
+            color: var(--accent);
+        }
+        body.light-theme .adaptive-wiki-col h3 {
+            color: #1E3F2E !important;
+        }
+        .adaptive-wiki-col ul {
+            color: var(--text);
+        }
+        body.light-theme .adaptive-wiki-col ul {
+            color: #111827 !important;
+        }
+        
+        /* Local privacy notice card */
+        .local-privacy-notice {
+            margin-top: 1.5rem;
+            padding: 1rem;
+            border-radius: 8px;
+            font-size: 0.88rem;
+            line-height: 1.4;
+            background: rgba(26, 115, 232, 0.1);
+            border: 1px solid rgba(26, 115, 232, 0.2);
+            color: #8ab4f8;
+        }
+        body.light-theme .local-privacy-notice {
+            background: #EFF6FF !important;
+            border: 1px solid rgba(37, 99, 235, 0.25) !important;
+            color: #1E40AF !important;
+        }
+        
+        /* Reindex warning alert card overrides */
+        body.light-theme .reindex-warning {
+            background-color: #FEF3C7 !important;
+            border-color: #FCD34D !important;
+            color: #92400E !important;
+        }
+
+        /* Dynamic form input & textarea adaptivity overrides for Light Mode */
+        body.light-theme .chat-input-form {
+            background: #FFFFFF !important;
+            border-color: rgba(0, 0, 0, 0.12) !important;
+            box-shadow: inset 0 2px 4px rgba(0,0,0,0.05) !important;
+        }
+        body.light-theme .chat-input-field {
+            color: #1A1D24 !important;
+        }
+        body.light-theme .chat-input-field::placeholder {
+            color: #7B828F !important;
+            opacity: 0.8;
+        }
+        body.light-theme .form-select, 
+        body.light-theme .form-input {
+            background-color: #FFFFFF !important;
+            border-color: rgba(0, 0, 0, 0.12) !important;
+            color: #1A1D24 !important;
+        }
+        body.light-theme .form-select:focus, 
+        body.light-theme .form-input:focus {
+            background-color: #FFFFFF !important;
+            border-color: var(--secondary) !important;
+            box-shadow: 0 0 10px rgba(224, 122, 95, 0.2) !important;
+        }
+        body.light-theme .form-select option {
+            background-color: #FFFFFF !important;
+            color: #1A1D24 !important;
+        }
+        body.light-theme .support-input {
+            background-color: #FFFFFF !important;
+            border-color: rgba(0, 0, 0, 0.12) !important;
+            color: #1A1D24 !important;
+        }
+        body.light-theme .support-footer {
+            background-color: var(--card-bg-solid) !important;
+            border-top-color: rgba(0, 0, 0, 0.08) !important;
+        }
+
+        /* Support Launcher and Support Widget overrides for Light Mode */
+        body.light-theme .support-launcher {
+            background: linear-gradient(135deg, #FFFFFF 0%, #FAF8F5 100%) !important;
+            border-color: var(--primary) !important;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.08), 0 0 12px rgba(212, 175, 55, 0.15) !important;
+        }
+        body.light-theme .support-widget {
+            background-color: #FFFFFF !important;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+            border-color: rgba(0, 0, 0, 0.08) !important;
+        }
+        body.light-theme .support-header {
+            background: linear-gradient(135deg, #FAF8F5 0%, #EAE5D9 100%) !important;
+            border-bottom: 2px solid var(--primary) !important;
+        }
+        body.light-theme .support-header div div {
+            color: #1A1D24 !important;
+        }
+        body.light-theme .support-header .support-close-btn {
+            color: #1A1D24 !important;
+        }
+        body.light-theme .support-body {
+            background-color: #FAF8F5 !important;
+        }
+        body.light-theme .support-msg.system {
+            background-color: #E0F2F1 !important;
+            color: #004D40 !important;
+            border-color: rgba(0, 121, 107, 0.15) !important;
+            border-left: 4px solid #00796B !important;
+        }
+        body.light-theme .support-msg.user {
+            background: linear-gradient(135deg, #00796B 0%, #0097A7 100%) !important;
+            color: white !important;
+        }
+
+        /* Dynamic adaptive styling for phrase cards inside Live Translate tab */
+        body.light-theme #tab-translate .phrase-bubble,
+        body.light-theme #tab-translate .diagnostic-card > div > div {
+            background: #E0F2F1 !important; /* Beautiful soft prismarine teal/blue */
+            border-color: rgba(0, 121, 107, 0.18) !important;
+            box-shadow: 0 2px 8px rgba(0, 121, 107, 0.05) !important;
+        }
+        body.light-theme #tab-translate .phrase-bubble div,
+        body.light-theme #tab-translate .diagnostic-card > div > div div {
+            color: #004D40 !important; /* Deep prismarine text */
+        }
+        body.light-theme #tab-translate .phrase-bubble div div,
+        body.light-theme #tab-translate .diagnostic-card > div > div div div {
+            color: #00796B !important; /* Muted label text */
         }
     </style>
 </head>
 <body>
+
+    <!-- Floating Theme Toggle Switch -->
+    <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
+        <span id="theme-icon">🌙</span>
+    </button>
 
     <!-- =======================================================================
          STAGE 1: SIDEBAR DIAGNOSTICS
@@ -829,6 +1233,9 @@
             <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-itinerary')">
                 <span>🗺️ Custom Itinerary</span>
             </button>
+            <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-translate')">
+                <span>🌐 Live Translate</span>
+            </button>
             <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-diagnostics')">
                 <span>⚙️ System Diagnostics</span>
             </button>
@@ -847,8 +1254,10 @@
         
         <!-- Welcome banner taglines -->
         <div class="banner-container">
-            <div class="banner-title">Odisha Tourism AI Travel Agent</div>
-            <div class="banner-subtitle">Explore "Odisha's Best Kept Secret" powered by fully secure, local generative AI</div>
+            <div class="banner-content">
+                <div class="banner-title">Odisha Tourism AI Travel Agent</div>
+                <div class="banner-subtitle">Explore "Odisha's Best Kept Secret" powered by fully secure, local generative AI</div>
+            </div>
         </div>
 
         <!-- ===================================================================
@@ -864,22 +1273,22 @@
             
             <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
                 <!-- Tech Stack Detail Card -->
-                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--accent); background: #FFFFFF;">
-                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--accent); margin-bottom: 1rem;">🚀 Key Features & Capabilities</h3>
-                    <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem; line-height: 1.5; color: var(--text);">
+                <div class="wiki-col adaptive-wiki-col" style="padding: 2rem; border-top-color: var(--accent);">
+                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; margin-bottom: 1rem;">🚀 Key Features & Capabilities</h3>
+                    <ul style="padding-left: 1.2rem; display: flex; flex-direction: column; gap: 0.75rem; font-size: 0.95rem; line-height: 1.5;">
                         <li><strong>Live Conversational Chatbot</strong>: Real-time responses with citations pulling context from official tourism resources.</li>
                         <li><strong>Day-by-Day Itinerary Planner</strong>: Custom travel route generation with flexible duration and travel pace options.</li>
                         <li><strong>Local Attractions Encyclopedia</strong>: Offline historical guides, timings, and entry rules for Odisha's premium landmarks.</li>
                         <li><strong>Authentic Culinary Guide</strong>: Local food search highlighting Lord Jagannath's sacred Mahaprasad first.</li>
                     </ul>
                     
-                    <div style="margin-top: 1.5rem; background: #E8F0FE; padding: 1rem; border-radius: 8px; font-size: 0.88rem; color: #1967D2; line-height: 1.4;">
+                    <div class="local-privacy-notice">
                         💡 <strong>Local Privacy Guarantee</strong>: All embeddings and vector checks are executed 100% locally on your machine for zero third-party telemetry.
                     </div>
                 </div>
                 
                 <!-- Welcome Info / Gallery Card -->
-                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--primary); background: #FFFFFF; display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
+                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--primary); display: flex; flex-direction: column; justify-content: center; align-items: center; text-align: center;">
                     <span style="font-size: 4.5rem; margin-bottom: 1rem; filter: drop-shadow(0 4px 10px rgba(0,0,0,0.1));">🛕</span>
                     <h3 style="font-family: var(--font-hdr); font-size: 1.6rem; color: var(--primary); margin-bottom: 0.5rem;">Odisha's Best Kept Secret</h3>
                     <p style="font-size: 0.95rem; line-height: 1.5; opacity: 0.8; color: var(--text);">
@@ -900,13 +1309,13 @@
             
             <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;">
                 <!-- Model Selector and Status Indicators Card -->
-                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--primary); background: #FFFFFF;">
+                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--primary);">
                     <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--primary); margin-bottom: 1.25rem;">🤖 Model Setup & Diagnostic Status</h3>
                     
                     <!-- Model selector -->
                     <div class="form-group" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
                         <label class="form-label">🤖 Select active LLM Model:</label>
-                        <select class="form-select" id="model-selector" style="background-color: white; border-color: #E2E2D9; color: var(--text);">
+                        <select class="form-select" id="model-selector">
                             <!-- Dynamically populated via javascript diagnostics -->
                             <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
                         </select>
@@ -931,11 +1340,11 @@
                 </div>
                 
                 <!-- Database Sync Card -->
-                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--accent); background: #FFFFFF;">
-                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--accent); margin-bottom: 1.25rem;">🔄 Knowledge Base Sync & Rebuild</h3>
+                <div class="wiki-col adaptive-wiki-col" style="padding: 2rem; border-top-color: var(--accent);">
+                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; margin-bottom: 1.25rem;">🔄 Knowledge Base Sync & Rebuild</h3>
                     
                     <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div class="reindex-warning" style="margin-bottom: 1rem; background-color: #FFF3CD; border-left: 5px solid #FFC107; padding: 1rem; border-radius: 8px; color: #856404; font-size: 0.9rem; line-height: 1.5; font-weight: 500;">
+                        <div class="reindex-warning" style="margin-bottom: 1rem;">
                             ⚠️ <strong>Rebuild Index</strong>: Triggers automated web scrapers to crawl verified sources and rebuild the local search indexes. This process takes 30-60 seconds to process text and embeddings.
                         </div>
                         <button class="btn btn-gold" id="reindex-btn" onclick="triggerReindex()" style="width: 100%; padding: 1.0rem;">
@@ -966,7 +1375,7 @@
                 <!-- Chat Window Column (Left) -->
                 <div>
                     <div class="chat-pane">
-                        <h4 style="font-size: 1.15rem; border-bottom: 1px solid #E2E2D9; padding-bottom: 0.5rem; color: var(--secondary);">🗣️ Conversational Guide</h4>
+                        <h4 style="font-size: 1.15rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem; color: var(--secondary);">🗣️ Conversational Guide</h4>
                         
                         <!-- Dynamic Chat input and scroll stack -->
                         <div id="chat-wrapper" style="display: flex; flex-direction: column; gap: 1rem;">
@@ -997,8 +1406,8 @@
                     </div>
                 </div>
 
-                <!-- Citations Drawer Column (Right) -->
-                <div>
+                <!-- Citations Drawer Column (Right - Hidden as sources are opened directly in new tabs) -->
+                <div style="display: none;">
                     <div class="citations-panel" id="citations-container">
                         <h4 style="font-size: 1.15rem; color: var(--text);">📑 Verified Sources & Citations</h4>
                         <p style="color: var(--text); font-size: 0.9rem; opacity: 0.9; font-weight: 500; margin-bottom: 0.5rem;">Context chunks retrieved in real-time from the local vector database used to formulate the guide's answer.</p>
@@ -1066,6 +1475,203 @@
                 </div>
             </div>
 
+
+    </div>
+
+        <!-- ===================================================================
+             TAB 5: LIVE TRANSLATION HUB
+             =================================================================== -->
+        <div id="tab-translate" class="tab-content">
+            <h4 style="font-family: var(--font-hdr); font-size: 2.2rem; color: var(--secondary); margin-bottom: 0.5rem;">🌐 Live Translate & Cultural Guide</h4>
+            <p style="font-size: 1.05rem; margin-bottom: 2rem; opacity: 0.8; line-height: 1.6;">
+                Bridge the communication gap instantly! Translate your travel requests, questions, or dining preferences to Odisha's native language <strong>Odia (ଓଡ଼ିଆ)</strong> or <strong>Hindi</strong>, and read/listen to common travel phrases with local pronunciations.
+            </p>
+
+            <!-- Translation Workspace -->
+            <div class="itinerary-layout" style="grid-template-columns: 1fr 1fr; gap: 2rem; margin-bottom: 3rem;">
+                <!-- Left: Source Text input -->
+                <div class="itinerary-form-card" style="padding: 2rem;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                        <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--primary);">Source Text</h3>
+                        <div style="display: flex; align-items: center; gap: 10px;">
+                            <!-- Microphone Speech Recognition Button -->
+                            <button id="btn-start-record" onclick="toggleSpeechRecognition()" class="btn" style="padding: 0.4rem 0.8rem; font-size: 0.88rem; background: rgba(212,175,55,0.15); color: var(--primary); border: 1px solid rgba(212,175,55,0.3); border-radius: 20px; display: inline-flex; align-items: center; gap: 6px; box-shadow: none;" title="Speak Input">
+                                <span id="mic-icon">🎤</span> <span id="mic-text">Speak</span>
+                            </button>
+                            <!-- Source Language Selector -->
+                            <select class="form-select" id="trans-source-lang" style="width: 140px; padding: 0.4rem 0.75rem; font-size: 0.9rem;">
+                                <option value="English" selected>English 🇬🇧</option>
+                                <option value="Odia">Odia (ଓଡ଼ିଆ) 🛕</option>
+                                <option value="Hindi">Hindi (हिंदी) 🇮🇳</option>
+                                <option value="Spanish">Spanish 🇪🇸</option>
+                                <option value="French">French 🇫🇷</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 1; display: flex; flex-direction: column;">
+                        <textarea class="form-input" id="trans-source-text" placeholder="Type what you want to say to local people (e.g. 'Can you please guide me to the temple entry point?')" style="flex: 1; min-height: 160px; resize: none; font-family: var(--font-main); line-height: 1.5; padding: 1rem; border-radius: 10px; background-color: rgba(0,0,0,0.25); color: var(--text); border: 1px solid var(--border-color);"></textarea>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem; margin-top: 1rem;">
+                        <button class="btn btn-gold" id="btn-do-translate" onclick="executeTranslation()" style="flex: 1; padding: 0.8rem;">
+                            <span>Translate Text 🔄</span>
+                        </button>
+                        <button class="btn" onclick="swapTranslationLanguages()" style="padding: 0.8rem 1rem; background: rgba(255,255,255,0.05); border: 1px solid var(--border-color); color: var(--text);" title="Swap Languages">
+                            <span>⇄</span>
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Right: Translated output -->
+                <div class="itinerary-view-card" style="padding: 2rem; display: flex; flex-direction: column; justify-content: space-between; min-height: 280px;">
+                    <div>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.5rem;">
+                            <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--secondary);">Translation Output</h3>
+                            <div style="display: flex; align-items: center; gap: 10px;">
+                                <label style="font-size: 0.85rem; color: var(--text-muted); display: inline-flex; align-items: center; gap: 6px; cursor: pointer; user-select: none; margin-right: 5px;">
+                                    <input type="checkbox" id="chk-auto-speak" checked style="accent-color: var(--secondary); cursor: pointer; width: 14px; height: 14px;"> <span>🔊 Auto-Speak</span>
+                                </label>
+                                <!-- Target Language Selector -->
+                                <select class="form-select" id="trans-target-lang" style="width: 140px; padding: 0.4rem 0.75rem; font-size: 0.9rem;">
+                                    <option value="Odia" selected>Odia (ଓଡ଼ିଆ) 🛕</option>
+                                    <option value="Hindi">Hindi (हिंदी) 🇮🇳</option>
+                                    <option value="English">English 🇬🇧</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <!-- Translation output area -->
+                        <div id="trans-output-box" class="itinerary-result-display" style="font-size: 1.3rem; line-height: 1.6; font-weight: 500; min-height: 120px; color: var(--text); padding: 0.5rem 0;">
+                            <span style="color: var(--text-muted); font-size: 0.95rem; font-style: italic;">Your real-time translation output will appear here...</span>
+                        </div>
+                    </div>
+
+                    <!-- Translation Actions -->
+                    <div id="trans-actions" style="display: none; gap: 1rem; margin-top: 1rem; border-top: 1px solid var(--border-color); padding-top: 1rem;">
+                        <button class="btn" onclick="speakText(document.getElementById('trans-output-box').innerText, document.getElementById('trans-target-lang').value)" style="flex: 1; padding: 0.6rem 1rem; font-size: 0.9rem; display: inline-flex; align-items: center; gap: 8px;">
+                            <span>🔊 Read Aloud (TTS)</span>
+                        </button>
+                        <button class="btn btn-gold" onclick="copyTranslationToClipboard()" style="padding: 0.6rem 1.2rem; font-size: 0.9rem; color: #0b0d13;">
+                            <span>📋 Copy</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Common Travel Phrases Section -->
+            <div class="chat-pane" style="width: 100%; padding: 2rem;">
+                <h3 style="font-family: var(--font-hdr); font-size: 1.6rem; color: var(--primary); margin-bottom: 0.5rem; display: flex; align-items: center; gap: 10px;">🗣️ Quick Talk: Common Odia Travel Phrases</h3>
+                <p style="color: var(--text-muted); font-size: 0.92rem; margin-bottom: 2rem;">Click the speaker button next to any phrase to read it aloud dynamically to local residents!</p>
+
+                <!-- Categorized Phrase Accordions -->
+                <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1.5rem;">
+                    
+                    <!-- Category 1: Greetings & Basics -->
+                    <div class="diagnostic-card" style="background-color: rgba(255,255,255,0.02) !important; border: 1px solid var(--border-color) !important; border-left: 4px solid var(--accent) !important; padding: 1.5rem; border-radius: 12px;">
+                        <h4 style="font-family: var(--font-hdr); font-size: 1.25rem; color: var(--accent); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">👋 Greetings & Basics</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <!-- Phrase Card -->
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">Hello (Respectful)</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ନମସ୍କାର (Namaskāra)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--accent);">Phonetic: Nam-as-kar</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ନମସ୍କାର', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(129, 178, 154, 0.15); color: var(--accent); border: 1px solid rgba(129, 178, 154, 0.25);" title="Listen">🔊</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">Thank You</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ଧନ୍ୟବାଦ (Dhanyabāda)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--accent);">Phonetic: Dhanya-baad</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ଧନ୍ୟବାଦ', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(129, 178, 154, 0.15); color: var(--accent); border: 1px solid rgba(129, 178, 154, 0.25);" title="Listen">🔊</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">Yes / No</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ହଁ / ନା (Han / Nā)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--accent);">Phonetic: Hun / Naa</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ହଁ। ନା।', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(129, 178, 154, 0.15); color: var(--accent); border: 1px solid rgba(129, 178, 154, 0.25);" title="Listen">🔊</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 2: Directions & Transport -->
+                    <div class="diagnostic-card" style="background-color: rgba(255,255,255,0.02) !important; border: 1px solid var(--border-color) !important; border-left: 4px solid var(--secondary) !important; padding: 1.5rem; border-radius: 12px;">
+                        <h4 style="font-family: var(--font-hdr); font-size: 1.25rem; color: var(--secondary); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">🗺️ Directions & Transport</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">Where is this place?</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ଏହି ଜାଗାଟି କେଉଁଠି? (Jāgāṭi keuṅṭhi?)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--secondary);">Phonetic: Ehi jaa-gaa-ti ke-un-thi?</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ଏହି ଜାଗାଟି କେଉଁଠି?', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(224, 122, 95, 0.15); color: var(--secondary); border: 1px solid rgba(224, 122, 95, 0.25);" title="Listen">🔊</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">Take me to the Temple</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ମନ୍ଦିରକୁ ନେଇ ଚାଲନ୍ତୁ (Mandiraku nei chalantu)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--secondary);">Phonetic: Man-di-ra-ku nei cha-lan-tu</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ମନ୍ଦିରକୁ ନେଇ ଚାଲନ୍ତୁ', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(224, 122, 95, 0.15); color: var(--secondary); border: 1px solid rgba(224, 122, 95, 0.25);" title="Listen">🔊</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">How far is it?</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ଏହା କେତେ ଦୂର? (Ehā kete dūra?)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--secondary);">Phonetic: Eha kete doo-ra?</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ଏହା କେତେ ଦୂର?', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(224, 122, 95, 0.15); color: var(--secondary); border: 1px solid rgba(224, 122, 95, 0.25);" title="Listen">🔊</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Category 3: Dining & Food -->
+                    <div class="diagnostic-card" style="background-color: rgba(255,255,255,0.02) !important; border: 1px solid var(--border-color) !important; border-left: 4px solid var(--primary) !important; padding: 1.5rem; border-radius: 12px;">
+                        <h4 style="font-family: var(--font-hdr); font-size: 1.25rem; color: var(--primary); margin-bottom: 1rem; border-bottom: 1px solid var(--border-color); padding-bottom: 0.25rem;">🍲 Dining & Food</h4>
+                        
+                        <div style="display: flex; flex-direction: column; gap: 1rem;">
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">Is this very spicy?</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ଏହା ବହୁତ ରାଗ କି? (Ehā bahuta rāga ki?)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--primary);">Phonetic: Eha bahut raag ki?</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ଏହା ବହୁତ ରାଗ କି?', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(212, 175, 55, 0.15); color: var(--primary); border: 1px solid rgba(212, 175, 55, 0.25);" title="Listen">🔊</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">I want some water</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ମୋତେ ପାଣି ଦରକାର (Mote pāṇi darakāra)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--primary);">Phonetic: Mote paa-ni dar-kar</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ମୋତେ ପାଣି ଦରକାର', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(212, 175, 55, 0.15); color: var(--primary); border: 1px solid rgba(212, 175, 55, 0.25);" title="Listen">🔊</button>
+                            </div>
+
+                            <div style="background: rgba(0,0,0,0.15); padding: 0.75rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); display: flex; justify-content: space-between; align-items: center;">
+                                <div>
+                                    <div style="font-weight: 600; font-size: 0.88rem; color: var(--text-muted);">This food is delicious!</div>
+                                    <div style="font-size: 1.05rem; color: var(--text); font-weight: bold; margin: 2px 0;">ଖାଦ୍ୟ ବହୁତ ସ୍ୱାଦିଷ୍ଟ! (Khādya swādiṣṭa!)</div>
+                                    <div style="font-size: 0.78rem; font-style: italic; color: var(--primary);">Phonetic: Khaadya bahuty swadist!</div>
+                                </div>
+                                <button class="btn" onclick="speakText('ଖାଦ୍ୟ ବହୁତ ସ୍ୱାଦିଷ୍ଟ!', 'Odia')" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; background: rgba(212, 175, 55, 0.15); color: var(--primary); border: 1px solid rgba(212, 175, 55, 0.25);" title="Listen">🔊</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
 
     </div>
 
@@ -1199,6 +1805,19 @@
             }
         }
 
+        // Smoothly scroll and highlight the citations panel on clicking 'Know More'
+        function scrollToCitations(event) {
+            if (event) event.preventDefault();
+            const container = document.getElementById("citations-container");
+            if (container) {
+                container.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                container.classList.add("highlight-pulse");
+                setTimeout(() => {
+                    container.classList.remove("highlight-pulse");
+                }, 2000);
+            }
+        }
+
         // Lightweight markdown parsing function for assistant chat bubbles
         function formatMarkdown(text) {
             if (!text) return "";
@@ -1308,6 +1927,7 @@
  
             const thinkingBubble = document.getElementById(thinkingId);
             let accumulatedAnswer = "";
+            let lastSourceUrl = "https://odishatourism.gov.in/";
  
             // Fetch RAG response via streaming stream reader
             fetch("/api/chat", {
@@ -1348,6 +1968,10 @@
                                         if (placeholder) placeholder.remove();
                                         
                                         if (parsed && parsed.length > 0) {
+                                            // Capture the primary source URL to map to our chat link
+                                            if (parsed[0] && parsed[0].url) {
+                                                lastSourceUrl = parsed[0].url;
+                                            }
                                             parsed.forEach((cit, index) => {
                                                 const card = document.createElement("div");
                                                 card.className = "citation-card";
@@ -1370,8 +1994,7 @@
                                         chatHistory.scrollTop = chatHistory.scrollHeight;
                                     } else if (currentEvent === "done") {
                                         // Process final text & latency stats
-                                        
-                                        thinkingBubble.innerHTML = `<div class="bubble-header assistant-hdr">Ollama Guide</div><div>${formatMarkdown(parsed.answer)}</div><span class="latency-stamp">⏱️ Generated locally in ${parsed.duration} seconds.</span>`;
+                                        thinkingBubble.innerHTML = `<div class="bubble-header assistant-hdr">Ollama Guide</div><div>${formatMarkdown(parsed.answer)}</div><div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; border-top: 1px solid rgba(224, 122, 95, 0.1); padding-top: 0.4rem;"><span class="latency-stamp" style="margin-top: 0;">⏱️ Generated in ${parsed.duration} seconds.</span><a href="${lastSourceUrl}" target="_blank" class="know-more-link">Know More 📑</a></div>`;
                                         chatHistory.scrollTop = chatHistory.scrollHeight;
                                     }
                                 } catch (e) {
@@ -1457,6 +2080,260 @@
                 genBtn.innerHTML = "Generate Travel Itinerary 🚀";
             });
         }
+
+        // Execute real-time text translation utilizing the LLM translation API route
+        function executeTranslation() {
+            const sourceText = document.getElementById("trans-source-text").value.trim();
+            const sourceLang = document.getElementById("trans-source-lang").value;
+            const targetLang = document.getElementById("trans-target-lang").value;
+            const outputBox = document.getElementById("trans-output-box");
+            const transBtn = document.getElementById("btn-do-translate");
+            const transActions = document.getElementById("trans-actions");
+
+            if (!sourceText) {
+                alert("Please enter text to translate!");
+                return;
+            }
+
+            transBtn.disabled = true;
+            transBtn.innerHTML = '<span class="spinner"></span> <span>Translating...</span>';
+            outputBox.innerHTML = '<span class="spinner" style="border-top-color: var(--secondary);"></span> <em>Generating direct translation...</em>';
+            transActions.style.display = "none";
+
+            fetch("/api/translate", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ text: sourceText, source_lang: sourceLang, target_lang: targetLang })
+            })
+            .then(res => res.json())
+            .then(data => {
+                if (data.error) {
+                    outputBox.innerHTML = `<span style="color: var(--secondary); font-weight: 600;">Error: ${data.error}</span>`;
+                } else {
+                    outputBox.innerText = data.translation;
+                    transActions.style.display = "flex"; // Show speech and copy buttons
+                    
+                    // Auto-Speak if option is checked!
+                    const autoSpeakChecked = document.getElementById("chk-auto-speak").checked;
+                    if (autoSpeakChecked) {
+                        speakText(data.translation, targetLang);
+                    }
+                }
+            })
+            .catch(err => {
+                console.error("Translation failed:", err);
+                outputBox.innerHTML = `<span style="color: var(--secondary); font-weight: 600;">Error: Connection to backend failed.</span>`;
+            })
+            .finally(() => {
+                transBtn.disabled = false;
+                transBtn.innerHTML = 'Translate Text 🔄';
+            });
+        }
+
+        // Manage client-side local Speech-to-Text transcription utilizing native Web Speech Recognition
+        let recognition = null;
+        let isRecording = false;
+
+        function toggleSpeechRecognition() {
+            const micBtn = document.getElementById("btn-start-record");
+            const micIcon = document.getElementById("mic-icon");
+            const micText = document.getElementById("mic-text");
+            const sourceText = document.getElementById("trans-source-text");
+            const sourceLang = document.getElementById("trans-source-lang").value;
+
+            // Check browser recognition support
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRecognition) {
+                alert("Speech recognition is not supported in this browser. Please use a modern browser like Google Chrome or Microsoft Edge.");
+                return;
+            }
+
+            if (isRecording) {
+                // Stop recording
+                recognition.stop();
+                return;
+            }
+
+            // Start recording
+            recognition = new SpeechRecognition();
+            recognition.continuous = false;
+            recognition.interimResults = false;
+
+            // Match language code dynamically based on selected source language!
+            let locale = "en-US";
+            if (sourceLang === "Odia") locale = "or-IN";
+            else if (sourceLang === "Hindi") locale = "hi-IN";
+            else if (sourceLang === "Spanish") locale = "es-ES";
+            else if (sourceLang === "French") locale = "fr-FR";
+            
+            recognition.lang = locale;
+
+            recognition.onstart = () => {
+                isRecording = true;
+                micBtn.style.background = "rgba(224, 122, 95, 0.25)";
+                micBtn.style.color = "var(--secondary)";
+                micBtn.style.borderColor = "rgba(224, 122, 95, 0.5)";
+                micBtn.style.boxShadow = "0 0 12px var(--secondary-glow)";
+                micIcon.innerText = "🛑";
+                micText.innerText = "Listening...";
+                sourceText.placeholder = "Listening active speech... Speak clearly now!";
+                sourceText.value = "";
+            };
+
+            recognition.onresult = (event) => {
+                const transcript = event.results[0][0].transcript;
+                sourceText.value = transcript;
+                sourceText.placeholder = "Type what you want to say to local people...";
+                
+                // Automatically execute translation as soon as user finishes speaking!
+                setTimeout(() => {
+                    executeTranslation();
+                }, 400);
+            };
+
+            recognition.onerror = (event) => {
+                console.error("Speech recognition error:", event.error);
+                if (event.error !== 'no-speech') {
+                    alert("Speech recognition error: " + event.error);
+                }
+                stopRecordingState();
+            };
+
+            recognition.onend = () => {
+                stopRecordingState();
+            };
+
+            recognition.start();
+
+            function stopRecordingState() {
+                isRecording = false;
+                micBtn.style.background = "rgba(212,175,55,0.15)";
+                micBtn.style.color = "var(--primary)";
+                micBtn.style.borderColor = "rgba(212,175,55,0.3)";
+                micBtn.style.boxShadow = "none";
+                micIcon.innerText = "🎤";
+                micText.innerText = "Speak";
+                sourceText.placeholder = "Type what you want to say to local people...";
+            }
+        }
+
+        // Swap selected translation languages and shift text if applicable
+        function swapTranslationLanguages() {
+            const sourceSelector = document.getElementById("trans-source-lang");
+            const targetSelector = document.getElementById("trans-target-lang");
+            const sourceText = document.getElementById("trans-source-text");
+            const outputBox = document.getElementById("trans-output-box");
+
+            // Swap selections if valid options exist
+            const tempVal = sourceSelector.value;
+            // Check if target has the option we want to select
+            const hasOptionTarget = Array.from(targetSelector.options).some(opt => opt.value === tempVal);
+            const hasOptionSource = Array.from(sourceSelector.options).some(opt => opt.value === targetSelector.value);
+
+            if (hasOptionTarget && hasOptionSource) {
+                const prevTargetVal = targetSelector.value;
+                sourceSelector.value = prevTargetVal;
+                targetSelector.value = tempVal;
+
+                // Swap actual text values
+                const prevSourceText = sourceText.value;
+                const prevOutputText = outputBox.innerText;
+
+                if (prevSourceText && prevOutputText && !prevOutputText.includes("Your real-time translation output")) {
+                    sourceText.value = prevOutputText;
+                    outputBox.innerText = prevSourceText;
+                }
+            } else {
+                alert("Cannot swap languages. Ensure target language option exists in both selectors.");
+            }
+        }
+
+        // Copy translation results directly to the user's clipboard
+        function copyTranslationToClipboard() {
+            const outputText = document.getElementById("trans-output-box").innerText;
+            if (!outputText || outputText.includes("Your real-time translation output")) return;
+
+            navigator.clipboard.writeText(outputText)
+                .then(() => {
+                    alert("Translation copied to clipboard!");
+                })
+                .catch(err => {
+                    console.error("Clipboard copy failed:", err);
+                });
+        }
+
+        // Dynamic HTML5 Web Speech Synthesis API Reader
+        function speakText(text, targetLang) {
+            if (!text || text.trim() === "") return;
+            
+            // Check speech synthesis support
+            if (!('speechSynthesis' in window)) {
+                alert("Sorry, your browser does not support local speech synthesis.");
+                return;
+            }
+
+            // Stop any playing sounds
+            window.speechSynthesis.cancel();
+
+            const utterance = new SpeechSynthesisUtterance(text);
+            
+            // Guess a fitting voice tag based on chosen language
+            const langCode = targetLang.toLowerCase();
+            if (langCode.includes("odia") || langCode.includes("or")) {
+                utterance.lang = "hi-IN"; // standard hindi is a fantastic phonetical fallback for Odia words
+            } else if (langCode.includes("hindi") || langCode.includes("hi")) {
+                utterance.lang = "hi-IN";
+            } else if (langCode.includes("english") || langCode.includes("en")) {
+                utterance.lang = "en-IN"; // English with natural Indian accent is beautiful
+            } else if (langCode.includes("spanish") || langCode.includes("es")) {
+                utterance.lang = "es-ES";
+            } else if (langCode.includes("french") || langCode.includes("fr")) {
+                utterance.lang = "fr-FR";
+            } else {
+                utterance.lang = "en-US";
+            }
+
+            // Fetch list of active voices to match preferred locale if possible
+            const voices = window.speechSynthesis.getVoices();
+            let voiceMatch = voices.find(v => v.lang.startsWith(utterance.lang));
+            if (voiceMatch) {
+                utterance.voice = voiceMatch;
+            }
+
+            utterance.rate = 0.9; // speak slightly slower for high clarity
+            window.speechSynthesis.speak(utterance);
+        }
+
+        // premium Theme Toggle functionality supporting local storage
+        function toggleTheme() {
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            body.classList.toggle('light-theme');
+            
+            if (body.classList.contains('light-theme')) {
+                themeIcon.textContent = '☀️'; // Light mode shows Sun
+                localStorage.setItem('theme', 'light');
+            } else {
+                themeIcon.textContent = '🌙'; // Dark mode shows Moon
+                localStorage.setItem('theme', 'dark');
+            }
+        }
+
+        // Initialize saved theme settings on DOM load
+        document.addEventListener('DOMContentLoaded', () => {
+            const savedTheme = localStorage.getItem('theme');
+            const body = document.body;
+            const themeIcon = document.getElementById('theme-icon');
+            
+            if (savedTheme === 'light') {
+                body.classList.add('light-theme');
+                if (themeIcon) themeIcon.textContent = '☀️';
+            } else {
+                body.classList.remove('light-theme');
+                if (themeIcon) themeIcon.textContent = '🌙';
+            }
+        });
     </script>
 
     <!-- =======================================================================

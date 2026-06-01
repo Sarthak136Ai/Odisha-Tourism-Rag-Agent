@@ -151,7 +151,112 @@ def api_pdf():
         return jsonify({"error": str(e)}), 500
 
 
+@app.route("/api/translate", methods=["POST"])
+def api_translate():
+    """
+    Translates input text from any source language to a target language.
+    """
+    data = request.json or {}
+    text = data.get("text", "").strip()
+    source_lang = data.get("source_lang", "English")
+    target_lang = data.get("target_lang", "Odia")
+    
+    if not text:
+        return jsonify({"error": "Empty text"}), 400
+        
+    logger.info(f"Translation Request received: '{text}' from {source_lang} to {target_lang}")
+    
+    try:
+        # Prompt model to perform exact translation with highly robust script guard rails
+        system_prompt = (
+            f"You are a highly precise multi-lingual translator. Translate the text exactly from {source_lang} to {target_lang}. "
+            "Return ONLY the direct, plain translated text in the native script of the target language. Do not add any conversational text, "
+            "explanations, notes, or extra markup.\n"
+        )
+        if target_lang.lower() == "odia" or target_lang.lower().startswith("or"):
+            system_prompt += (
+                "CRITICAL INSTRUCTION FOR ODIA (ଓଡ଼ିଆ):\n"
+                "1. You MUST translate strictly into authentic Odia language and write in the proper, native Odia script (ଓଡ଼ିଆ ଅକ୍ଷର).\n"
+                "2. ABSOLUTE BAN ON BENGALI INFLUENCE: Do NOT use Bengali vocabulary, grammar, syntax, or phrasing written in Odia script! For example, never use 'କେନ୍' (which sounds like Bengali 'keno'/'why') or incorrect pronouns like 'ଆମ ତୁମ'.\n"
+                "3. Here are exact reference translations for common sentences to maintain absolute grammatical and stylistic purity:\n"
+                "   - 'hii, this is Sarthak, what's your name?' -> 'ନମସ୍କାର, ମୁଁ ସାର୍ଥକ, ତୁମର ନାମ କଣ?'\n"
+                "   - 'what is your name?' -> 'ତୁମର ନାମ କଣ?' or 'ଆପଣଙ୍କ ନାମ କଣ?'\n"
+                "   - 'my name is ...' -> 'ମୋର ନାମ ...' or 'ମୋ ନାଁ ...'\n"
+                "   - 'how are you?' -> 'ତୁମେ କେମିତି ଅଛ?' or 'ଆପଣ କେମିତି ଅଛନ୍ତି?'\n"
+                "   - 'where is ...' -> '... କେଉଁଠି ଅଛି?'\n"
+                "4. Double-check that your output uses strictly natural, native Odia words and sentence structure. Never mix Bengali or Hindi grammar/phrasing into Odia script."
+            )
 
+        gemini_api_key = getattr(config, "GEMINI_API_KEY", "")
+        if gemini_api_key:
+            logger.info("Using Google Gemini API for highly precise translation.")
+            try:
+                url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key={gemini_api_key}"
+                gemini_payload = {
+                    "contents": [
+                        {
+                            "parts": [
+                                {"text": text}
+                            ]
+                        }
+                    ],
+                    "systemInstruction": {
+                        "parts": [
+                            {"text": system_prompt}
+                        ]
+                    },
+                    "generationConfig": {
+                        "temperature": 0.0
+                    }
+                }
+                response = requests.post(url, json=gemini_payload, timeout=12)
+                if response.status_code == 200:
+                    result = response.json()
+                    candidates = result.get("candidates", [])
+                    if candidates:
+                        parts = candidates[0].get("content", {}).get("parts", [])
+                        if parts:
+                            translated_text = parts[0].get("text", "").strip()
+                            logger.info("Google Gemini translation succeeded.")
+                            return jsonify({"translation": translated_text})
+                
+                logger.error(f"Gemini API returned error: {response.status_code} - {response.text}. Falling back to Groq...")
+            except Exception as gemini_err:
+                logger.error(f"Gemini API execution error: {gemini_err}. Falling back to Groq...")
+
+        # Fallback / Default to Groq Llama Translation (using the highly capable Llama 3.3 70B model)
+        logger.info("Using Groq API fallback for translation with llama-3.3-70b-versatile.")
+        payload = {
+            "model": "llama-3.3-70b-versatile",
+            "messages": [
+                {
+                    "role": "system",
+                    "content": system_prompt
+                },
+                {"role": "user", "content": text}
+            ],
+            "temperature": 0.0,
+            "stream": False
+        }
+        
+        response = requests.post(
+            rag_pipeline.groq_url,
+            headers=rag_pipeline.headers,
+            json=payload,
+            timeout=10
+        )
+        
+        if response.status_code == 200:
+            result = response.json()
+            choices = result.get("choices", [])
+            if choices:
+                translated_text = choices[0].get("message", {}).get("content", "").strip()
+                return jsonify({"translation": translated_text})
+        
+        return jsonify({"error": f"Failed to translate. Status code: {response.status_code}"}), 500
+    except Exception as e:
+        logger.error(f"Error executing translation API: {e}")
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/api/diagnostics", methods=["GET"])
