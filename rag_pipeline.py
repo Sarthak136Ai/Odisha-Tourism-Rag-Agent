@@ -290,6 +290,13 @@ CONTEXT:
             logger.error(f"Request exception calling Groq API: {e}")
             yield "Error: Connection to Groq Cloud API failed."
 
+    def query_llm_with_context(self, query: str, context: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en") -> str:
+        """
+        Sends prompt to Groq Cloud API and returns full response as string.
+        """
+        tokens = list(self.query_llm_with_context_stream(query, context, model_name, language))
+        return "".join(tokens)
+
     def run_pipeline(self, query: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en") -> Dict[str, Any]:
         """
         Executes the full RAG pipeline:

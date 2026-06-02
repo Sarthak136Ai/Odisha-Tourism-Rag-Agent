@@ -170,21 +170,31 @@ def api_translate():
         # Prompt model to perform exact translation with highly robust script guard rails
         system_prompt = (
             f"You are a highly precise multi-lingual translator. Translate the text exactly from {source_lang} to {target_lang}. "
-            "Return ONLY the direct, plain translated text in the native script of the target language. Do not add any conversational text, "
+            "Return ONLY the direct, plain translated text. Do not add any conversational text, "
             "explanations, notes, or extra markup.\n"
         )
         if target_lang.lower() == "odia" or target_lang.lower().startswith("or"):
             system_prompt += (
-                "CRITICAL INSTRUCTION FOR ODIA (ଓଡ଼ିଆ):\n"
-                "1. You MUST translate strictly into authentic Odia language and write in the proper, native Odia script (ଓଡ଼ିଆ ଅକ୍ଷର).\n"
-                "2. ABSOLUTE BAN ON BENGALI INFLUENCE: Do NOT use Bengali vocabulary, grammar, syntax, or phrasing written in Odia script! For example, never use 'କେନ୍' (which sounds like Bengali 'keno'/'why') or incorrect pronouns like 'ଆମ ତୁମ'.\n"
-                "3. Here are exact reference translations for common sentences to maintain absolute grammatical and stylistic purity:\n"
-                "   - 'hii, this is Sarthak, what's your name?' -> 'ନମସ୍କାର, ମୁଁ ସାର୍ଥକ, ତୁମର ନାମ କଣ?'\n"
-                "   - 'what is your name?' -> 'ତୁମର ନାମ କଣ?' or 'ଆପଣଙ୍କ ନାମ କଣ?'\n"
-                "   - 'my name is ...' -> 'ମୋର ନାମ ...' or 'ମୋ ନାଁ ...'\n"
-                "   - 'how are you?' -> 'ତୁମେ କେମିତି ଅଛ?' or 'ଆପଣ କେମିତି ଅଛନ୍ତି?'\n"
-                "   - 'where is ...' -> '... କେଉଁଠି ଅଛି?'\n"
-                "4. Double-check that your output uses strictly natural, native Odia words and sentence structure. Never mix Bengali or Hindi grammar/phrasing into Odia script."
+                "CRITICAL INSTRUCTION FOR ODIA:\n"
+                "1. You MUST translate strictly into normal, everyday Odia language, written entirely in the English/Latin alphabet phonetically (transliterated WhatsApp chat style). Do NOT use the native Odia script (ଓଡ଼ିଆ) or Devanagari.\n"
+                "2. ABSOLUTE BAN ON HINDI/BENGALI MIXTURE: You must NEVER mix Bengali or Hindi grammar/words into Odia. Specifically:\n"
+                "   - NEVER use the Hindi word 'sabse' (for 'best/most'). You MUST use the Odia word 'sabuthu' or 'sabutu' (e.g., 'sabuthu bhala' instead of 'sabse bhalo').\n"
+                "   - NEVER use the Bengali word 'bhalo' (for 'good/well'). You MUST use the Odia word 'bhala'.\n"
+                "   - NEVER use the Bengali word 'ei' (for 'this'). You MUST use the Odia word 'ehi' or 'e'.\n"
+                "   - NEVER use 'keno' or 'kene' (for 'why/what'). You MUST use the Odia word 'kana' or 'kahinki'.\n"
+                "3. Keep it in normal, casual Odia as real people speak in daily life. Avoid overly pure, formal, literary, or Sanskritized vocabulary. For example, do NOT use 'khadya' for food; use the everyday colloquial word 'khaiba' instead.\n"
+                "4. It is perfectly natural to use common English loan words if everyday Odia speakers use them in normal conversations (e.g. 'bus', 'train', 'ticket', 'gate', 'time', 'hotel', 'phone', 'photo', 'water', 'help').\n"
+                "5. Reference translations for common sentences to match normal WhatsApp-style talking:\n"
+                "   - 'What is the best food in this area?' -> 'Ehi jagara sabuthu bhala khaiba kana?' (Do NOT write 'Ei jaga ra sabse bhalo khaiba kana?')\n"
+                "   - 'hii, this is Sarthak, what's your name?' -> 'Hi, mu Sarthak, tuma naa kana?'\n"
+                "   - 'what is your name?' -> 'Tuma naa kana?' or 'Apananka naa kana?'\n"
+                "   - 'my name is ...' -> 'Mora naa ...'\n"
+                "   - 'how are you?' -> 'Tume kemiti achha?' or 'Apana kemiti achhanti?'\n"
+                "   - 'where is the temple?' -> 'Mandira keunthi achhi?'\n"
+                "   - 'thank you' -> 'Dhanyabad' or 'Thank you'\n"
+                "   - 'did you eat?' -> 'Tume khaila ki?' or 'Khaila ki nahi?'\n"
+                "   - 'yes, I ate' -> 'Han, khaili'\n"
+                "   - 'where can I get food?' -> 'Mote khaiba keunthi miliba?'"
             )
 
         gemini_api_key = getattr(config, "GEMINI_API_KEY", "")
