@@ -173,9 +173,32 @@ def api_translate():
             "Return ONLY the direct, plain translated text. Do not add any conversational text, "
             "explanations, notes, or extra markup.\n"
         )
-        if target_lang.lower() == "odia" or target_lang.lower().startswith("or"):
+        if target_lang.lower() in ["odia", "oriya", "or"]:
             system_prompt += (
-                "CRITICAL INSTRUCTION FOR ODIA:\n"
+                "CRITICAL INSTRUCTION FOR NATIVE ODIA:\n"
+                "1. You MUST translate strictly into normal, everyday Odia language, written entirely in native Odia script (ଓଡ଼ିଆ ଅକ୍ଷର). Do NOT use English/Latin alphabet, phonetic transliteration, or Devanagari.\n"
+                "2. ABSOLUTE BAN ON HINDI/BENGALI MIXTURE: You must NEVER mix Bengali or Hindi grammar/words into Odia. Specifically:\n"
+                "   - NEVER use equivalents of the Hindi word 'sabse' (for 'best/most'). You MUST use the Odia word 'ସବୁଠୁ' (sabuthu) or 'ସବୁଠାରୁ' (e.g., 'ସବୁଠୁ ଭଲ' (sabuthu bhala)).\n"
+                "   - NEVER use equivalents of the Bengali word 'bhalo' (for 'good/well'). You MUST use the Odia word 'ଭଲ' (bhala).\n"
+                "   - NEVER use equivalents of the Bengali word 'ei' (for 'this'). You MUST use the Odia word 'ଏହି' (ehi) or 'ଏ' (e).\n"
+                "   - NEVER use equivalents of 'keno' or 'kene' (for 'why/what'). You MUST use the Odia word 'କଣ' (kana) or 'କାହିଁକି' (kahinki).\n"
+                "3. Keep it in normal, casual Odia as real people speak in daily life. Avoid overly pure, formal, literary, or Sanskritized vocabulary. For example, do NOT use 'ଖାଦ୍ୟ' (khadya) for food; use the everyday colloquial word 'ଖାଇବା' (khaiba) instead.\n"
+                "4. It is perfectly natural to use common English loan words written in Odia script if everyday Odia speakers use them in normal conversations (e.g. 'ବସ', 'ଟ୍ରେନ', 'ଟିକେଟ', 'ଗେଟ', 'ଟାଇମ', 'ହୋଟେଲ', 'ଫୋନ', 'ଫଟୋ', 'ୱାଟର', 'ହେଲ୍ପ').\n"
+                "5. Reference translations for common sentences to match normal daily talking:\n"
+                "   - 'What is the best food in this area?' -> 'ଏହି ଜାଗାର ସବୁଠୁ ଭଲ ଖାଇବା କଣ?'\n"
+                "   - 'hii, this is Sarthak, what's your name?' -> 'ହାଏ, ମୁଁ ସାର୍ଥକ, ତୁମ ନାଁ କଣ?'\n"
+                "   - 'what is your name?' -> 'ତୁମ ନାଁ କଣ?' or 'ଆପଣଙ୍କ ନାଁ କଣ?'\n"
+                "   - 'my name is ...' -> 'ମୋର ନାଁ ...'\n"
+                "   - 'how are you?' -> 'ତୁମେ କେମିତି ଅଛ?' or 'ଆପଣ କେମିତି ଅଛନ୍ତି?'\n"
+                "   - 'where is the temple?' -> 'ମନ୍ଦିର କେଉଁଠି ଅଛି?'\n"
+                "   - 'thank you' -> 'ଧନ୍ୟବାଦ'\n"
+                "   - 'did you eat?' -> 'ତୁମେ ଖାଇଲ କି?' or 'ଖାଇଲ କି ନାହିଁ?'\n"
+                "   - 'yes, I ate' -> 'ହଁ, ଖାଇଲି'\n"
+                "   - 'where can I get food?' -> 'ମୋତେ ଖାଇବା କେଉଁଠି ମିଳିବ?'"
+            )
+        elif target_lang.lower() == "phonetic odia":
+            system_prompt += (
+                "CRITICAL INSTRUCTION FOR PHONETIC ODIA:\n"
                 "1. You MUST translate strictly into normal, everyday Odia language, written entirely in the English/Latin alphabet phonetically (transliterated WhatsApp chat style). Do NOT use the native Odia script (ଓଡ଼ିଆ) or Devanagari.\n"
                 "2. ABSOLUTE BAN ON HINDI/BENGALI MIXTURE: You must NEVER mix Bengali or Hindi grammar/words into Odia. Specifically:\n"
                 "   - NEVER use the Hindi word 'sabse' (for 'best/most'). You MUST use the Odia word 'sabuthu' or 'sabutu' (e.g., 'sabuthu bhala' instead of 'sabse bhalo').\n"
