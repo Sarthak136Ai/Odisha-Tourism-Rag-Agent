@@ -56,15 +56,16 @@ def api_chat():
     query = data.get("query", "").strip()
     model = data.get("model", config.DEFAULT_LLM_MODEL)
     language = data.get("language", "en")
+    history = data.get("history", [])
 
     if not query:
         return jsonify({"error": "Empty query"}), 400
 
-    logger.info(f"RAG Request received for streaming: '{query}' [Model: {model}, Lang: {language}]")
+    logger.info(f"RAG Request received for streaming: '{query}' [Model: {model}, Lang: {language}, History Len: {len(history)}]")
     
     try:
         # 1. Context retrieval (Fast, takes ~0.1s)
-        context, citations = rag_pipeline.retrieve_context(query, language=language)
+        context, citations = rag_pipeline.retrieve_context(query, history=history, language=language)
         
         def generate():
             # Send citations first as a special SSE event
@@ -73,7 +74,7 @@ def api_chat():
             # Now stream tokens as they arrive from local Ollama
             full_answer = []
             start_time = time.time()
-            for token in rag_pipeline.query_llm_with_context_stream(query, context, model, language):
+            for token in rag_pipeline.query_llm_with_context_stream(query, context, model, language, history):
                 full_answer.append(token)
                 yield f"event: token\ndata: {json.dumps({'token': token})}\n\n"
                 

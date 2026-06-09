@@ -1885,6 +1885,8 @@
             return processedLines.join('\n');
         }
 
+        let chatHistoryArray = [];
+
         // Conversational Layout transition on Submit
         function handleChatSubmit(event, formType) {
             if (event) event.preventDefault();
@@ -1930,11 +1932,19 @@
             let accumulatedAnswer = "";
             let lastSourceUrl = "https://odishatourism.gov.in/";
  
-            // Fetch RAG response via streaming stream reader
+            // Push query to local chat history array
+            chatHistoryArray.push({ role: "user", content: query });
+
+            // Fetch RAG response via streaming stream reader, passing last 10 messages of history
             fetch("/api/chat", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ query: query, model: activeModel, language: activeLang })
+                body: JSON.stringify({ 
+                    query: query, 
+                    history: chatHistoryArray.slice(-10), 
+                    model: activeModel, 
+                    language: activeLang 
+                })
             })
             .then(res => {
                 if (!res.ok) {
@@ -1997,6 +2007,9 @@
                                         // Process final text & latency stats
                                         thinkingBubble.innerHTML = `<div class="bubble-header assistant-hdr">Ollama Guide</div><div>${formatMarkdown(parsed.answer)}</div><div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; margin-top: 0.5rem; border-top: 1px solid rgba(224, 122, 95, 0.1); padding-top: 0.4rem;"><span class="latency-stamp" style="margin-top: 0;">⏱️ Generated in ${parsed.duration} seconds.</span><a href="${lastSourceUrl}" target="_blank" class="know-more-link">Know More 📑</a></div>`;
                                         chatHistory.scrollTop = chatHistory.scrollHeight;
+                                        
+                                        // Push assistant's final response to local chat history array
+                                        chatHistoryArray.push({ role: "assistant", content: parsed.answer });
                                     }
                                 } catch (e) {
                                     console.error("Error parsing stream line:", e, line);

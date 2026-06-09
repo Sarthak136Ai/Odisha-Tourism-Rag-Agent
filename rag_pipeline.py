@@ -9,6 +9,10 @@ from vector_store import OdishaVectorStore
 logging.basicConfig(level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logger = logging.getLogger(__name__)
 
+import re
+import glob
+import os
+
 class OdishaRAGPipeline:
     def __init__(self):
         self.vector_store = OdishaVectorStore()
@@ -17,6 +21,106 @@ class OdishaRAGPipeline:
             "Authorization": f"Bearer {config.GROQ_API_KEY}",
             "Content-Type": "application/json"
         }
+        self.boost_keywords = self.load_boost_keywords()
+
+    def load_boost_keywords(self) -> List[str]:
+        """
+        Dynamically extracts all tourist spot names from the raw data text files
+        to use them for exact hybrid search boosts.
+        """
+        keywords = {
+            # Core cultural/culinary fallback keywords
+            "huma", "jirang", "deomali", "daringbadi", "chandipur", "gopalpur", 
+            "mahaprasad", "chhena", "rasagola", "dahibara", "nilamadhaba", 
+            "taratarini", "kapilas", "dhabaleswar", "duduma", "gupteswar", 
+            "bhitarkanika", "similipal", "gahirmatha", "chappan", "khaja",
+            "rasabali", "dalma", "pakhala", "taptapani", "khandadhar", "biraja",
+            "khiching", "yogini", "ansupa", "debrigarh", "nrusinghanath", 
+            "harishankar", "ghantarini", "talasari", "langudi", "anand bazar",
+            "poda", "jhili", "chappan bhog", "baripada", "chhau", "tarakasi",
+            "indradyumna"
+        }
+        
+        raw_files = glob.glob(os.path.join(config.RAW_DATA_DIR, "*tourist_spots*.txt"))
+        for file_path in raw_files:
+            try:
+                with open(file_path, "r", encoding="utf-8") as f:
+                    content = f.read()
+                
+                # Match * **Place Name**
+                matches = re.findall(r"\*\s*\*\*(.*?)\*\*", content)
+                for m in matches:
+                    name = m.strip().lower()
+                    if name:
+                        keywords.add(name)
+                        # Add individual words of length >= 4 that are not common descriptors
+                        for part in name.split():
+                            if len(part) >= 4 and part not in [
+                                "temple", "beach", "lake", "waterfall", "spot", "centre", 
+                                "dam", "hill", "hills", "shrine", "cave", "caves", "river", "park"
+                            ]:
+                                keywords.add(part)
+            except Exception as e:
+                logger.error(f"Error loading boost keywords from {file_path}: {e}")
+                
+        logger.info(f"Loaded {len(keywords)} dynamic boost keywords from tourist spot registry.")
+        return list(keywords)
+
+    def condense_query(self, query: str, history: List[Dict[str, str]]) -> str:
+        """
+        Uses LLM to condense a follow-up query and conversation history into a standalone English search query.
+        """
+        if not history or len(history) <= 1:
+            return query
+            
+        history_text = ""
+        # History has the user's current query as the last element. Extract previous turns.
+        prev_turns = history[:-1] if history[-1].get("content") == query else history
+        
+        if not prev_turns:
+            return query
+            
+        for turn in prev_turns:
+            role = "User" if turn.get("role") == "user" else "Assistant"
+            content = turn.get("content", "")
+            history_text += f"{role}: {content}\n"
+            
+        system_prompt = (
+            "Given the following conversation history and a follow-up user query, "
+            "rewrite the user query to be a standalone, fully-explicit search query in English "
+            "that contains all necessary details/keywords from the history. "
+            "If the query is already standalone, translate it to English. "
+            "Output ONLY the rewritten English search query, with no intro, explanations, or quotes."
+        )
+        
+        payload = {
+            "model": "llama-3.1-8b-instant",
+            "messages": [
+                {"role": "system", "content": system_prompt},
+                {"role": "user", "content": f"History:\n{history_text}\n\nFollow-up query: {query}"}
+            ],
+            "temperature": 0.0,
+            "stream": False
+        }
+        
+        try:
+            response = requests.post(
+                self.groq_url,
+                headers=self.headers,
+                json=payload,
+                timeout=5
+            )
+            if response.status_code == 200:
+                result = response.json()
+                choices = result.get("choices", [])
+                if choices:
+                    condensed = choices[0].get("message", {}).get("content", "").strip()
+                    logger.info(f"Condensed query: '{query}' -> '{condensed}'")
+                    return condensed
+        except Exception as e:
+            logger.error(f"Error condensing query: {e}")
+            
+        return query
 
     def translate_to_english(self, text: str) -> str:
         """
@@ -69,17 +173,23 @@ class OdishaRAGPipeline:
             return "https://whc.unesco.org/en/list/246"
         return "https://odishatourism.gov.in/"
 
-    def retrieve_context(self, query: str, k=4, language: str = "en") -> Tuple[str, List[Dict[str, Any]]]:
+    def retrieve_context(self, query: str, history: List[Dict[str, str]] = None, k=4, language: str = "en") -> Tuple[str, List[Dict[str, Any]]]:
         """
         Retrieves top K chunks related to the query and formats a consolidated context string.
         Also returns the raw citation dictionaries.
         Uses a robust hybrid retrieval mechanism boosting exact matches for specific
-        Odisha tourism sites, temples, and culinary entities (like Huma, Jirang, Mahaprasad, etc.).
+        Odisha tourism sites, temples, and culinary entities.
         """
-        # Translate query to English if the user selected a non-English language
-        search_query = query
-        if language != "en":
-            search_query = self.translate_to_english(query)
+        # Condense query using history first to get the standalone search query in English
+        if history:
+            search_query = self.condense_query(query, history)
+            # If condensed query language is not english and it didn't change format, check language translation
+            if language != "en" and search_query == query:
+                search_query = self.translate_to_english(query)
+        else:
+            search_query = query
+            if language != "en":
+                search_query = self.translate_to_english(query)
 
         logger.info(f"Retrieving context for search query: '{search_query}' (original query: '{query}', language: '{language}')")
         
@@ -89,27 +199,13 @@ class OdishaRAGPipeline:
         # Keep track of unique content hashes to avoid duplicates
         retrieved_contents = {m["content"].strip() for m in matches}
         
-        # 2. Hybrid Keyword Matching (exact boost for specific entities)
+        # 2. Hybrid Keyword Matching (exact boost for specific entities using dynamic list)
         normalized_query = search_query.lower()
         
-        # Define specific entities to boost
-        boost_keywords = [
-            "huma", "jirang", "deomali", "daringbadi", "chandipur", "gopalpur", 
-            "mahaprasad", "chhena", "rasagola", "dahibara", "nilamadhaba", 
-            "taratarini", "kapilas", "dhabaleswar", "duduma", "gupteswar", 
-            "bhitarkanika", "similipal", "gahirmatha", "chappan", "khaja",
-            "rasabali", "dalma", "pakhala", "taptapani", "khandadhar", "biraja",
-            "khiching", "yogini", "ansupa", "debrigarh", "nrusinghanath", 
-            "harishankar", "ghantarini", "talasari", "langudi", "anand bazar",
-            "poda", "jhili", "chappan bhog", "baripada", "chhau", "tarakasi",
-            "indradyumna"
-        ]
-        
-        matched_keywords = [kw for kw in boost_keywords if kw in normalized_query]
+        matched_keywords = [kw for kw in self.boost_keywords if kw in normalized_query]
         
         # General culinary intent detection: if query asks about food/cuisine/sweets, boost key culinary terms
         food_triggers = ["cuisine", "cuisines", "food", "foods", "sweet", "sweets", "delicacy", "delicacies", "dish", "dishes", "eat"]
-        import re
         if any(re.search(rf"\b{re.escape(trigger)}\b", normalized_query) for trigger in food_triggers):
             logger.info("Culinary intent detected in query. Boosting key Odia culinary entities.")
             for kw in ["mahaprasad", "chhena", "rasagola", "dalma", "pakhala", "dahibara"]:
@@ -120,7 +216,6 @@ class OdishaRAGPipeline:
         if matched_keywords:
             logger.info(f"Hybrid search activated! Query contains specific keywords: {matched_keywords}")
             try:
-                import re
                 # Retrieve all documents to search in memory
                 all_data = self.vector_store.db.get()
                 if all_data and "documents" in all_data:
@@ -176,7 +271,7 @@ class OdishaRAGPipeline:
         full_context = "\n\n".join(context_blocks)
         return full_context, citations
 
-    def query_llm_with_context_stream(self, query: str, context: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en") -> Any:
+    def query_llm_with_context_stream(self, query: str, context: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en", history: List[Dict[str, str]] = None) -> Any:
         """
         Sends prompt to Groq Cloud API and yields response tokens.
         Forces strict contextual answers to prevent hallucination.
@@ -246,12 +341,19 @@ CONTEXT:
 ------------------
         """
 
+        messages = [{"role": "system", "content": system_prompt}]
+        if history:
+            prev_turns = history[:-1] if history[-1].get("content") == query else history
+            for turn in prev_turns:
+                role = turn.get("role")
+                content = turn.get("content", "")
+                if role in ["user", "assistant"]:
+                    messages.append({"role": role, "content": content})
+        messages.append({"role": "user", "content": query})
+
         payload = {
             "model": model_name,
-            "messages": [
-                {"role": "system", "content": system_prompt},
-                {"role": "user", "content": query}
-            ],
+            "messages": messages,
             "temperature": 0.2,
             "stream": True
         }
@@ -290,14 +392,14 @@ CONTEXT:
             logger.error(f"Request exception calling Groq API: {e}")
             yield "Error: Connection to Groq Cloud API failed."
 
-    def query_llm_with_context(self, query: str, context: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en") -> str:
+    def query_llm_with_context(self, query: str, context: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en", history: List[Dict[str, str]] = None) -> str:
         """
         Sends prompt to Groq Cloud API and returns full response as string.
         """
-        tokens = list(self.query_llm_with_context_stream(query, context, model_name, language))
+        tokens = list(self.query_llm_with_context_stream(query, context, model_name, language, history))
         return "".join(tokens)
 
-    def run_pipeline(self, query: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en") -> Dict[str, Any]:
+    def run_pipeline(self, query: str, model_name: str = config.DEFAULT_LLM_MODEL, language: str = "en", history: List[Dict[str, str]] = None) -> Dict[str, Any]:
         """
         Executes the full RAG pipeline:
         1. Context retrieval from Chroma DB
@@ -306,10 +408,10 @@ CONTEXT:
         4. Consolidated packaging (answer + citations)
         """
         # Step 1 & 2: Retrieve context
-        context, citations = self.retrieve_context(query, language=language)
+        context, citations = self.retrieve_context(query, history=history, language=language)
         
         # Step 3: Call local LLM
-        answer = self.query_llm_with_context(query, context, model_name, language)
+        answer = self.query_llm_with_context(query, context, model_name, language, history)
         
         return {
             "query": query,
