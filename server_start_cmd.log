@@ -1,0 +1,64 @@
+2026-06-09 11:11:33,504 - INFO - CUDA is not available. Using CPU for generating embeddings.
+2026-06-09 11:11:33,504 - INFO - Loading local offline embedding model: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5...
+2026-06-09 11:11:33,505 - INFO - Loading SentenceTransformer model from C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 9255.15it/s]
+2026-06-09 11:11:33,673 - INFO - Successfully loaded local embedding model!
+2026-06-09 11:11:33,754 - INFO - Initialized Chroma DB at: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\vectordb
+2026-06-09 11:11:33,754 - INFO - CUDA is not available. Using CPU for generating embeddings.
+2026-06-09 11:11:33,755 - INFO - Loading local offline embedding model: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5...
+2026-06-09 11:11:33,756 - INFO - Loading SentenceTransformer model from C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 8421.36it/s]
+2026-06-09 11:11:34,044 - INFO - Successfully loaded local embedding model!
+2026-06-09 11:11:34,047 - INFO - Initialized Chroma DB at: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\vectordb
+2026-06-09 11:11:34,072 - INFO - Starting local Flask web server...
+ * Serving Flask app 'app_flask'
+ * Debug mode: on
+2026-06-09 11:11:34,088 - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on http://127.0.0.1:5000
+2026-06-09 11:11:34,088 - INFO - [33mPress CTRL+C to quit[0m
+2026-06-09 11:11:34,100 - INFO -  * Restarting with watchdog (windowsapi)
+2026-06-09 11:11:42,727 - INFO - CUDA is not available. Using CPU for generating embeddings.
+2026-06-09 11:11:42,727 - INFO - Loading local offline embedding model: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5...
+2026-06-09 11:11:42,728 - INFO - Loading SentenceTransformer model from C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 10687.29it/s]
+2026-06-09 11:11:42,878 - INFO - Successfully loaded local embedding model!
+2026-06-09 11:11:42,946 - INFO - Initialized Chroma DB at: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\vectordb
+2026-06-09 11:11:42,946 - INFO - CUDA is not available. Using CPU for generating embeddings.
+2026-06-09 11:11:42,946 - INFO - Loading local offline embedding model: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5...
+2026-06-09 11:11:42,947 - INFO - Loading SentenceTransformer model from C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 10269.15it/s]
+2026-06-09 11:11:43,166 - INFO - Successfully loaded local embedding model!
+2026-06-09 11:11:43,170 - INFO - Initialized Chroma DB at: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\vectordb
+2026-06-09 11:11:43,196 - INFO - Starting local Flask web server...
+2026-06-09 11:11:43,203 - WARNING -  * Debugger is active!
+2026-06-09 11:11:43,207 - INFO -  * Debugger PIN: 123-000-663
+2026-06-09 11:11:55,650 - INFO - RAG Request received for streaming: 'What are the tourist spots in Malkangiri?' [Model: llama-3.1-8b-instant, Lang: en]
+2026-06-09 11:11:55,650 - INFO - Retrieving context for search query: 'What are the tourist spots in Malkangiri?' (original query: 'What are the tourist spots in Malkangiri?', language: 'en')
+2026-06-09 11:11:55,689 - INFO - 127.0.0.1 - - [09/Jun/2026 11:11:55] "POST /api/chat HTTP/1.1" 200 -
+2026-06-09 11:11:55,689 - INFO - Invoking streaming Groq LLM model: 'llama-3.1-8b-instant'...
+2026-06-09 11:26:01,399 - INFO -  * Detected change in 'C:\\Users\\hp\\OneDrive\\Desktop\\Odisha-Tourism-Rag-Agent\\app.py', reloading
+2026-06-09 11:26:02,332 - INFO -  * Restarting with watchdog (windowsapi)
+2026-06-09 11:27:00,949 - INFO - CUDA is not available. Using CPU for generating embeddings.
+2026-06-09 11:27:00,949 - INFO - Loading local offline embedding model: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5...
+2026-06-09 11:27:00,965 - INFO - Loading SentenceTransformer model from C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 7968.94it/s]
+2026-06-09 11:27:01,214 - INFO - Successfully loaded local embedding model!
+2026-06-09 11:27:02,580 - INFO - Initialized Chroma DB at: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\vectordb
+2026-06-09 11:27:02,580 - INFO - CUDA is not available. Using CPU for generating embeddings.
+2026-06-09 11:27:02,580 - INFO - Loading local offline embedding model: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5...
+2026-06-09 11:27:02,581 - INFO - Loading SentenceTransformer model from C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\models\bge-small-en-v1.5.
+Loading weights:   0%|          | 0/199 [00:00<?, ?it/s]Loading weights: 100%|##########| 199/199 [00:00<00:00, 7251.98it/s]
+2026-06-09 11:27:02,837 - INFO - Successfully loaded local embedding model!
+2026-06-09 11:27:02,841 - INFO - Initialized Chroma DB at: C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\vectordb
+2026-06-09 11:27:02,875 - INFO - Starting local Flask web server...
+2026-06-09 11:27:02,882 - WARNING -  * Debugger is active!
+2026-06-09 11:27:02,886 - INFO -  * Debugger PIN: 123-000-663
+2026-06-09 11:29:23,340 - INFO -  * Detected change in 'C:\\Users\\hp\\OneDrive\\Desktop\\Odisha-Tourism-Rag-Agent\\rag_pipeline.py', reloading
+2026-06-09 11:29:24,300 - INFO -  * Restarting with watchdog (windowsapi)
+Traceback (most recent call last):
+  File "C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\app_flask.py", line 11, in <module>
+    from rag_pipeline import OdishaRAGPipeline
+  File "C:\Users\hp\OneDrive\Desktop\Odisha-Tourism-Rag-Agent\rag_pipeline.py", line 99
+    {"role": "system", "system_prompt" if False else system_prompt}, # Keep it simple
+                                                                 ^
+SyntaxError: ':' expected after dictionary key
