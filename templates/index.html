@@ -1236,9 +1236,6 @@
             <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-translate')">
                 <span>🌐 Live Translate</span>
             </button>
-            <button class="sidebar-nav-btn" onclick="switchSidebarTab(event, 'tab-diagnostics')">
-                <span>⚙️ System Diagnostics</span>
-            </button>
         </div>
     </div>
 
@@ -1298,62 +1295,7 @@
             </div>
         </div>
 
-        <!-- ===================================================================
-             TAB 4: SYSTEM DIAGNOSTICS & CONTROLS
-             =================================================================== -->
-        <div id="tab-diagnostics" class="tab-content">
-            <h4 style="font-family: var(--font-hdr); font-size: 2.2rem; color: var(--secondary); margin-bottom: 0.5rem;">⚙️ System Settings & Diagnostics</h4>
-            <p style="font-size: 1.05rem; margin-bottom: 2rem; opacity: 0.8; line-height: 1.6;">
-                Configure the LLM models, view real-time vector database document status, and trigger the background indexing engine.
-            </p>
-            
-            <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 2rem;">
-                <!-- Model Selector and Status Indicators Card -->
-                <div class="wiki-col" style="padding: 2rem; border-top: 4px solid var(--primary);">
-                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; color: var(--primary); margin-bottom: 1.25rem;">🤖 Model Setup & Diagnostic Status</h3>
-                    
-                    <!-- Model selector -->
-                    <div class="form-group" style="margin-bottom: 1.5rem; display: flex; flex-direction: column; gap: 0.5rem;">
-                        <label class="form-label">🤖 Select active LLM Model:</label>
-                        <select class="form-select" id="model-selector">
-                            <!-- Dynamically populated via javascript diagnostics -->
-                            <option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option>
-                        </select>
-                    </div>
-
-                    <!-- System Diagnostics Card -->
-                    <h4 style="font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; opacity: 0.7; margin-bottom: 0.5rem;">Diagnostics Connection:</h4>
-                    <div class="diagnostic-card" style="background: rgba(0, 0, 0, 0.03); color: var(--text); border-left-color: var(--accent); margin-bottom: 1.5rem; border: 1px solid #E2E2D9; border-left: 3px solid var(--accent);">
-                        <div class="diagnostic-row" style="display: flex; justify-content: space-between; align-items: center;">
-                            <span>Groq Connectivity:</span>
-                            <span class="badge" id="diag-ollama">PENDING</span>
-                        </div>
-                        <div class="diagnostic-row" style="margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center;">
-                            <span>Active Model:</span>
-                            <span id="diag-model" style="font-weight: 600;">`llama-3.1-8b-instant`</span>
-                        </div>
-                        <div class="diagnostic-row" style="margin-top: 0.4rem; display: flex; justify-content: space-between; align-items: center;">
-                            <span>Vector Database:</span>
-                            <span id="diag-db-count" style="font-weight: 600;">0 chunks</span>
-                        </div>
-                    </div>
-                </div>
-                
-                <!-- Database Sync Card -->
-                <div class="wiki-col adaptive-wiki-col" style="padding: 2rem; border-top-color: var(--accent);">
-                    <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; margin-bottom: 1.25rem;">🔄 Knowledge Base Sync & Rebuild</h3>
-                    
-                    <div class="form-group" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                        <div class="reindex-warning" style="margin-bottom: 1rem;">
-                            ⚠️ <strong>Rebuild Index</strong>: Triggers automated web scrapers to crawl verified sources and rebuild the local search indexes. This process takes 30-60 seconds to process text and embeddings.
-                        </div>
-                        <button class="btn btn-gold" id="reindex-btn" onclick="triggerReindex()" style="width: 100%; padding: 1.0rem;">
-                            <span>Index & Rebuild Vector DB</span>
-                        </button>
-                    </div>
-                </div>
-            </div>
-        </div>
+        <select id="model-selector" style="display: none;"><option value="llama-3.1-8b-instant">llama-3.1-8b-instant</option></select>
 
         <!-- ===================================================================
              TAB 1: LIVE CHATBOT INTERFACE
@@ -1706,31 +1648,44 @@
                 .then(res => res.json())
                 .then(data => {
                     const statusSpan = document.getElementById("diag-ollama");
-                    if (data.ollama_active) {
-                        statusSpan.innerText = "🟢 ONLINE";
-                        statusSpan.className = "badge";
-                    } else {
-                        statusSpan.innerText = "🔴 OFFLINE";
-                        statusSpan.className = "badge offline";
+                    if (statusSpan) {
+                        if (data.ollama_active) {
+                            statusSpan.innerText = "🟢 ONLINE";
+                            statusSpan.className = "badge";
+                        } else {
+                            statusSpan.innerText = "🔴 OFFLINE";
+                            statusSpan.className = "badge offline";
+                        }
                     }
 
-                    document.getElementById("diag-model").innerText = "`" + data.active_model + "`";
-                    document.getElementById("diag-db-count").innerText = data.db_document_count + " chunks";
+                    const diagModel = document.getElementById("diag-model");
+                    if (diagModel) {
+                        diagModel.innerText = "`" + data.active_model + "`";
+                    }
+                    const diagDbCount = document.getElementById("diag-db-count");
+                    if (diagDbCount) {
+                        diagDbCount.innerText = data.db_document_count + " chunks";
+                    }
                     
                     // Populate models selector
                     const modelSelector = document.getElementById("model-selector");
-                    modelSelector.innerHTML = "";
-                    data.supported_models.forEach(m => {
-                        const opt = document.createElement("option");
-                        opt.value = m;
-                        opt.innerText = m;
-                        modelSelector.appendChild(opt);
-                    });
+                    if (modelSelector) {
+                        modelSelector.innerHTML = "";
+                        data.supported_models.forEach(m => {
+                            const opt = document.createElement("option");
+                            opt.value = m;
+                            opt.innerText = m;
+                            modelSelector.appendChild(opt);
+                        });
+                    }
                 })
                 .catch(err => {
                     console.error("Error checking diagnostics:", err);
-                    document.getElementById("diag-ollama").innerText = "🔴 OFFLINE";
-                    document.getElementById("diag-ollama").className = "badge offline";
+                    const statusSpan = document.getElementById("diag-ollama");
+                    if (statusSpan) {
+                        statusSpan.innerText = "🔴 OFFLINE";
+                        statusSpan.className = "badge offline";
+                    }
                 });
         }
 
