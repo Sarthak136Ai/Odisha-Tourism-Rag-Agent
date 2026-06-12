@@ -1,0 +1,27 @@
+# Ignore local virtual environments
+venv/
+.venv/
+env/
+
+# Ignore local model cache
+models/
+
+# Ignore local database and caches
+__pycache__/
+.ipynb_checkpoints/
+.pytest_cache/
+.vscode/
+
+# Ignore large log files
+*.log
+server_start.log
+server_start_cmd.log
+
+# Ignore scratch/test scripts
+scratch/
+test_*.py
+
+# Ignore version control
+.git/
+.gitignore
+.vercel/
