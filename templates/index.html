@@ -1461,7 +1461,6 @@
                                 <!-- Target Language Selector -->
                                 <select class="form-select" id="trans-target-lang" style="width: 140px; padding: 0.4rem 0.75rem; font-size: 0.9rem;">
                                     <option value="Odia" selected>Odia (ଓଡ଼ିଆ) 🛕</option>
-                                    <option value="Phonetic Odia">Phonetic Odia 🗣️</option>
                                     <option value="Hindi">Hindi (हिंदी) 🇮🇳</option>
                                     <option value="English">English 🇬🇧</option>
                                 </select>
@@ -2228,7 +2227,13 @@
             // Stop any playing sounds
             window.speechSynthesis.cancel();
 
-            const utterance = new SpeechSynthesisUtterance(text);
+            // Extract only the native script text if both native and phonetic transliterated exist
+            let textToSpeak = text;
+            if (text.includes("---")) {
+                textToSpeak = text.split("---")[0].trim();
+            }
+
+            const utterance = new SpeechSynthesisUtterance(textToSpeak);
             
             // Guess a fitting voice tag based on chosen language
             const langCode = targetLang.toLowerCase();
