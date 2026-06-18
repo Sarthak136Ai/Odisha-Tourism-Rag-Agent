@@ -16,7 +16,7 @@ logger = logging.getLogger(__name__)
 
 # --- STAGE 1: INJECTING PREMIUM STYLING ---
 st.set_page_config(
-    page_title="Odisha Tourism AI Guide",
+    page_title="Kalinga GPT",
     page_icon="🕌",
     layout="wide",
     initial_sidebar_state="expanded"
@@ -217,7 +217,7 @@ except Exception as e:
 
 # --- STAGE 3: SIDEBAR CONTROL PANEL ---
 with st.sidebar:
-    st.markdown("### 🕌 ODISHA TOURISM PORTAL")
+    st.markdown("### 🕌 Kalinga GPT PORTAL")
     st.image("https://upload.wikimedia.org/wikipedia/commons/1/1a/Seal_of_Odisha.svg", width=100)
     
     st.markdown("---")
@@ -281,7 +281,7 @@ with st.sidebar:
 # --- STAGE 4: MAIN HEADER BANNER ---
 st.markdown("""
 <div class="banner-container">
-    <div class="banner-title">Odisha Tourism AI Travel Agent</div>
+    <div class="banner-title">Kalinga GPT</div>
     <div class="banner-subtitle">Explore "India's Best Kept Secret" powered by fully secure, local generative AI</div>
 </div>
 """, unsafe_allow_html=True)
