@@ -1156,32 +1156,275 @@
             color: #00796B !important; /* Muted label text */
         }
 
+        /* --- HAMBURGER MENU (MOBILE) --- */
+        .hamburger-btn {
+            display: none;
+            background: none;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 1.4rem;
+            width: 42px;
+            height: 42px;
+            cursor: pointer;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            flex-shrink: 0;
+        }
+        .hamburger-btn:hover {
+            background: rgba(255,255,255,0.08);
+            border-color: var(--primary);
+        }
+
+        /* Mobile nav drawer overlay */
+        .mobile-nav-overlay {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            z-index: 998;
+            backdrop-filter: blur(4px);
+        }
+        .mobile-nav-overlay.open { display: block; }
+
+        /* Mobile drawer panel */
+        .mobile-nav-drawer {
+            position: fixed;
+            top: 0;
+            left: -100%;
+            width: 80%;
+            max-width: 300px;
+            height: 100%;
+            background: var(--sidebar-bg);
+            z-index: 999;
+            padding: 2rem 1.5rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            transition: left 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+        .mobile-nav-drawer.open { left: 0; }
+
+        .mobile-drawer-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid var(--border-color);
+        }
+        .mobile-drawer-header img { height: 36px; width: auto; }
+        .mobile-drawer-header span {
+            font-family: var(--font-hdr);
+            font-size: 1.1rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--primary) 0%, #ffd700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .mobile-nav-btn {
+            background: none;
+            border: none;
+            color: rgba(255,255,255,0.7);
+            font-family: var(--font-main);
+            font-weight: 500;
+            font-size: 1rem;
+            padding: 0.85rem 1rem;
+            border-radius: 10px;
+            text-align: left;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            width: 100%;
+        }
+        .mobile-nav-btn:hover { background: rgba(255,255,255,0.06); color: white; }
+        .mobile-nav-btn.active {
+            background: rgba(224,122,95,0.12);
+            color: white;
+            border-left: 3px solid var(--secondary);
+        }
+
+        /* --- BOTTOM TAB BAR (PHONES) --- */
+        .bottom-tab-bar {
+            display: none;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            z-index: 990;
+            background: var(--sidebar-bg);
+            border-top: 1px solid var(--border-color);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            padding: 0.5rem 0 calc(0.5rem + env(safe-area-inset-bottom));
+        }
+        .bottom-tab-bar-inner {
+            display: flex;
+            justify-content: space-around;
+            align-items: center;
+        }
+        .btm-tab-btn {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-main);
+            font-size: 0.65rem;
+            font-weight: 500;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            border-radius: 8px;
+            transition: all 0.2s ease;
+            min-width: 60px;
+        }
+        .btm-tab-btn span.icon { font-size: 1.35rem; line-height: 1; }
+        .btm-tab-btn.active { color: var(--secondary); }
+        .btm-tab-btn.active span.icon { 
+            filter: drop-shadow(0 0 6px var(--secondary));
+        }
+
         /* --- RESPONSIVE MEDIA QUERIES --- */
-        @media (max-width: 992px) {
+        /* ≤1024px: tablet adjustments */
+        @media (max-width: 1024px) {
+            .main-content { padding: 2rem 1.25rem; }
+            .itinerary-layout { grid-template-columns: 1fr; }
+            .wiki-layout { grid-template-columns: 1fr; }
+        }
+
+        /* ≤768px: mobile landscape / large phones */
+        @media (max-width: 768px) {
+            /* Swap full navbar for compact header + hamburger */
             .navbar {
                 height: auto;
-                padding: 1.25rem 1.5rem;
-                flex-direction: column;
-                gap: 1.25rem;
+                padding: 0.85rem 1rem;
+                flex-direction: row;
+                justify-content: space-between;
                 align-items: center;
-                text-align: center;
+                gap: 0;
             }
             .navbar-brand {
-                justify-content: center;
+                flex-direction: row;
+                gap: 0.6rem;
+                align-items: center;
             }
-            .navbar-nav {
-                flex-wrap: wrap;
-                justify-content: center;
-                gap: 0.75rem;
+            .navbar-logo { height: 30px; }
+            .navbar-title { font-size: 1rem; letter-spacing: 0; }
+            .navbar-nav { display: none; }   /* Hidden — use hamburger / bottom bar */
+            .navbar-actions { gap: 0.75rem; }
+            .hamburger-btn { display: flex; }
+
+            /* Main content padding */
+            .main-content { padding: 1.25rem 0.9rem; }
+
+            /* Hero banner */
+            .banner-container {
+                padding: 2.5rem 1.25rem;
+                min-height: 180px;
+                border-radius: 12px;
+                margin-bottom: 1.5rem;
             }
-            .navbar-actions {
-                width: 100%;
-                justify-content: center;
-                gap: 1rem;
+            .banner-title { font-size: 2rem; letter-spacing: 0.5px; }
+            .banner-subtitle { font-size: 0.95rem; }
+
+            /* Tabs strip — scrollable */
+            .tabs-header {
+                overflow-x: auto;
+                -webkit-overflow-scrolling: touch;
+                scrollbar-width: none;
+                gap: 6px;
+                padding-bottom: 0.5rem;
+                flex-wrap: nowrap;
             }
-            .itinerary-layout {
-                grid-template-columns: 1fr;
+            .tabs-header::-webkit-scrollbar { display: none; }
+            .tab-btn {
+                font-size: 0.88rem;
+                padding: 0.5rem 1rem;
+                white-space: nowrap;
+                flex-shrink: 0;
             }
+
+            /* Chat section */
+            .chat-scroll-container {
+                height: 320px;
+                padding-right: 8px;
+                margin-right: 0;
+            }
+            .chat-bubble { max-width: 95%; font-size: 0.9rem; padding: 1rem 1.1rem; }
+            .chat-pane { padding: 1.25rem; gap: 1rem; }
+
+            /* Chips */
+            .chips-container { gap: 7px; }
+            .suggestion-chip { font-size: 0.82rem; padding: 0.45rem 0.9rem; }
+
+            /* Forms */
+            .form-select, .form-input { font-size: 0.9rem; padding: 0.65rem 0.85rem; }
+            .btn { padding: 0.7rem 1.2rem; font-size: 0.9rem; }
+
+            /* Itinerary */
+            .itinerary-layout { grid-template-columns: 1fr; gap: 1rem; }
+            .itinerary-form-card, .itinerary-view-card { padding: 1.25rem; }
+            .itinerary-view-card { max-height: 420px; }
+
+            /* Wiki / About */
+            .wiki-layout { grid-template-columns: 1fr; gap: 1rem; }
+            .wiki-col { padding: 1.25rem; }
+
+            /* Support widget */
+            .support-widget {
+                width: calc(100vw - 2rem);
+                max-width: 380px;
+                right: 1rem;
+                bottom: 85px;
+                height: 460px;
+            }
+            .support-launcher { bottom: 15px; right: 15px; width: 50px; height: 50px; }
+
+            /* Add bottom padding so content doesn't hide under bottom bar */
+            .main-content { padding-bottom: 4.5rem; }
+        }
+
+        /* ≤480px: small phones */
+        @media (max-width: 480px) {
+            .navbar { padding: 0.75rem 0.85rem; }
+            .navbar-title { font-size: 0.9rem; }
+            .navbar-logo { height: 26px; }
+            .main-content { padding: 1rem 0.75rem 5rem; }
+
+            .banner-container { padding: 2rem 1rem; min-height: 160px; border-radius: 10px; }
+            .banner-title { font-size: 1.65rem; }
+            .banner-subtitle { font-size: 0.85rem; }
+
+            .chat-scroll-container { height: 280px; }
+            .chat-pane { padding: 1rem; border-radius: 12px; }
+            .chat-bubble { font-size: 0.875rem; padding: 0.85rem 1rem; }
+
+            .tabs-header { display: none; } /* Use bottom bar exclusively on small phones */
+            .bottom-tab-bar { display: block; }
+
+            .suggestion-chip { font-size: 0.78rem; padding: 0.4rem 0.75rem; }
+            .citation-card { padding: 1rem; }
+            .wiki-col { padding: 1rem; border-radius: 12px; }
+            .accordion-trigger { font-size: 0.92rem; padding: 1rem; }
+            .itinerary-result-display { font-size: 0.9rem; }
+
+            /* Support widget full-width on tiny screens */
+            .support-widget {
+                width: calc(100vw - 1rem);
+                right: 0.5rem;
+                left: 0.5rem;
+                bottom: 75px;
+                height: 420px;
+                border-radius: 14px;
+            }
+            .support-launcher { bottom: 75px; right: 0.85rem; width: 46px; height: 46px; font-size: 1.1rem; }
         }
     </style>
 </head>
@@ -1225,8 +1468,52 @@
             <button class="theme-toggle" id="theme-toggle-btn" onclick="toggleTheme()" aria-label="Toggle Theme">
                 <span id="theme-icon">🌙</span>
             </button>
+
+            <!-- Hamburger menu button (mobile only) -->
+            <button class="hamburger-btn" id="hamburger-btn" onclick="toggleMobileDrawer()" aria-label="Open navigation menu">
+                ☰
+            </button>
         </div>
     </header>
+
+    <!-- ===================================================================
+         MOBILE NAVIGATION DRAWER (appears on ≤768px)
+         =================================================================== -->
+    <div class="mobile-nav-overlay" id="mobile-nav-overlay" onclick="closeMobileDrawer()"></div>
+    <nav class="mobile-nav-drawer" id="mobile-nav-drawer" role="navigation">
+        <div class="mobile-drawer-header">
+            <img src="/static/odisha_logo.png" alt="Kalinga GPT">
+            <span>Kalinga GPT</span>
+        </div>
+        <button class="mobile-nav-btn active" id="mob-btn-about" onclick="switchTabMobile('tab-about', this)">🛕 About the Agent</button>
+        <button class="mobile-nav-btn" id="mob-btn-chat" onclick="switchTabMobile('tab-chat', this)">💬 Live AI Chatbot</button>
+        <button class="mobile-nav-btn" id="mob-btn-itinerary" onclick="switchTabMobile('tab-itinerary', this)">🗺️ Custom Itinerary</button>
+        <button class="mobile-nav-btn" id="mob-btn-translate" onclick="switchTabMobile('tab-translate', this)">🌐 Live Translate</button>
+    </nav>
+
+    <!-- ===================================================================
+         BOTTOM TAB BAR (phones ≤480px)
+         =================================================================== -->
+    <div class="bottom-tab-bar" id="bottom-tab-bar">
+        <div class="bottom-tab-bar-inner">
+            <button class="btm-tab-btn active" id="btm-about" onclick="switchTabMobile('tab-about', this, 'btm')">
+                <span class="icon">🛕</span>
+                <span>About</span>
+            </button>
+            <button class="btm-tab-btn" id="btm-chat" onclick="switchTabMobile('tab-chat', this, 'btm')">
+                <span class="icon">💬</span>
+                <span>Chat</span>
+            </button>
+            <button class="btm-tab-btn" id="btm-itinerary" onclick="switchTabMobile('tab-itinerary', this, 'btm')">
+                <span class="icon">🗺️</span>
+                <span>Itinerary</span>
+            </button>
+            <button class="btm-tab-btn" id="btm-translate" onclick="switchTabMobile('tab-translate', this, 'btm')">
+                <span class="icon">🌐</span>
+                <span>Translate</span>
+            </button>
+        </div>
+    </div>
 
     <!-- =======================================================================
          STAGE 2: MAIN PANEL CONTROLS
@@ -1252,7 +1539,7 @@
                 vector search database, and robust LLM generation to answer your questions using strictly verified government records, temple protocols, and culinary history.
             </p>
             
-            <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(400px, 1fr)); gap: 2rem;">
+            <div class="wiki-layout" style="grid-template-columns: repeat(auto-fit, minmax(min(100%, 400px), 1fr)); gap: 2rem;">
                 <!-- Tech Stack Detail Card -->
                 <div class="wiki-col adaptive-wiki-col" style="padding: 2rem; border-top-color: var(--accent);">
                     <h3 style="font-family: var(--font-hdr); font-size: 1.4rem; margin-bottom: 1rem;">🚀 Key Features & Capabilities</h3>
@@ -1684,6 +1971,24 @@
             if (evt) {
                 evt.currentTarget.classList.add("active");
             }
+
+            // Sync mobile drawer buttons
+            document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+            const mobileMap = {
+                'tab-about': 'mob-btn-about', 'tab-chat': 'mob-btn-chat',
+                'tab-itinerary': 'mob-btn-itinerary', 'tab-translate': 'mob-btn-translate'
+            };
+            const mBtn = document.getElementById(mobileMap[tabName]);
+            if (mBtn) mBtn.classList.add('active');
+
+            // Sync bottom tab bar buttons
+            document.querySelectorAll('.btm-tab-btn').forEach(b => b.classList.remove('active'));
+            const btmMap = {
+                'tab-about': 'btm-about', 'tab-chat': 'btm-chat',
+                'tab-itinerary': 'btm-itinerary', 'tab-translate': 'btm-translate'
+            };
+            const bBtn = document.getElementById(btmMap[tabName]);
+            if (bBtn) bBtn.classList.add('active');
         }
 
         // Accordion switching
@@ -2278,20 +2583,89 @@
             }
         }
 
+        // ===== MOBILE NAVIGATION: HAMBURGER DRAWER & BOTTOM TAB BAR =====
+
+        // Tab-name → drawer button ID mapping
+        const MOBILE_BTN_MAP = {
+            'tab-about':     'mob-btn-about',
+            'tab-chat':      'mob-btn-chat',
+            'tab-itinerary': 'mob-btn-itinerary',
+            'tab-translate': 'mob-btn-translate',
+        };
+        // Tab-name → bottom tab button ID mapping
+        const BTM_BTN_MAP = {
+            'tab-about':     'btm-about',
+            'tab-chat':      'btm-chat',
+            'tab-itinerary': 'btm-itinerary',
+            'tab-translate': 'btm-translate',
+        };
+
+        function toggleMobileDrawer() {
+            const overlay = document.getElementById('mobile-nav-overlay');
+            const drawer  = document.getElementById('mobile-nav-drawer');
+            overlay.classList.toggle('open');
+            drawer.classList.toggle('open');
+        }
+
+        function closeMobileDrawer() {
+            document.getElementById('mobile-nav-overlay').classList.remove('open');
+            document.getElementById('mobile-nav-drawer').classList.remove('open');
+        }
+
+        /**
+         * switchTabMobile — switches active tab and syncs all nav controls.
+         * @param {string} tabName  – the tab-content div ID
+         * @param {HTMLElement} clickedBtn – the button that was clicked
+         * @param {string} [source]  – 'btm' if called from bottom bar, else drawer
+         */
+        function switchTabMobile(tabName, clickedBtn, source) {
+            // 1. Activate tab content (same as desktop)
+            document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+            document.getElementById(tabName).classList.add('active');
+
+            // 2. Sync desktop nav-link-btn active state
+            document.querySelectorAll('.nav-link-btn').forEach(b => b.classList.remove('active'));
+            // find and activate matching desktop button by onclick attribute
+            document.querySelectorAll('.nav-link-btn').forEach(b => {
+                if (b.getAttribute('onclick') && b.getAttribute('onclick').includes(tabName)) {
+                    b.classList.add('active');
+                }
+            });
+
+            // 3. Sync mobile drawer buttons
+            document.querySelectorAll('.mobile-nav-btn').forEach(b => b.classList.remove('active'));
+            const drawerBtn = document.getElementById(MOBILE_BTN_MAP[tabName]);
+            if (drawerBtn) drawerBtn.classList.add('active');
+
+            // 4. Sync bottom tab bar buttons
+            document.querySelectorAll('.btm-tab-btn').forEach(b => b.classList.remove('active'));
+            const btmBtn = document.getElementById(BTM_BTN_MAP[tabName]);
+            if (btmBtn) btmBtn.classList.add('active');
+
+            // 5. Close drawer after selection
+            closeMobileDrawer();
+
+            // 6. Scroll to top of main content for UX
+            const mainEl = document.querySelector('.main-content');
+            if (mainEl) mainEl.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // ===== END MOBILE NAVIGATION =====
+
         // Initialize saved theme settings on DOM load
         document.addEventListener('DOMContentLoaded', () => {
             const savedTheme = localStorage.getItem('theme');
             const body = document.body;
             const themeIcon = document.getElementById('theme-icon');
-            
             if (savedTheme === 'light') {
                 body.classList.add('light-theme');
-                if (themeIcon) themeIcon.textContent = '☀️';
+                if (themeIcon) themeIcon.textContent = '\u2600\uFE0F';
             } else {
                 body.classList.remove('light-theme');
-                if (themeIcon) themeIcon.textContent = '🌙';
+                if (themeIcon) themeIcon.textContent = '\uD83C\uDF19';
             }
         });
+
     </script>
 
     <!-- =======================================================================
